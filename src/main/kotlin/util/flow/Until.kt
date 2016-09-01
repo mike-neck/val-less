@@ -13,19 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package util.basic
+package util.flow
 
-import org.junit.Test
-import util.shouldBe
-
-class UntilTest {
-
-    @Test fun runsUpTo11() =
-            1.doing { it + 1 }
-                    .until { it > 10 } shouldBe 11
-
-    @Test fun counterImpl() =
-            run { 0 to 0 }
-                    .doing { it.second to (it.second + 1) }
-                    .until { it.first > 10 } shouldBe (11 to 12)
+fun <T> T.doing(calc: (T) -> T): Until<T> = object : Until<T> {
+    override fun until(condition: (T) -> Boolean): T = go(this@doing, condition)
+    tailrec fun go(t: T, condition: (T) -> Boolean): T =
+            if (condition(t)) t else go(calc(t), condition)
 }
+
+interface Until<out T> {
+    fun until(condition: (T) -> Boolean): T
+}
+
+
