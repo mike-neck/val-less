@@ -27,6 +27,9 @@ package util
  */
 infix fun <T,R> T?.then(f: (T) -> R?): R? = if (this == null) null else f(this)
 
+/** shortcut of [then] */
+infix fun <T, R> T?.`^`(f: (T) -> R?): R? = this.then(f)
+
 /**
  * Avoiding compiler warning.
  * 
