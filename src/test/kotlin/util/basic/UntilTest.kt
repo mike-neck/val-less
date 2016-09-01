@@ -23,4 +23,9 @@ class UntilTest {
     @Test fun runsUpTo11() =
             1.doing { it + 1 }
                     .until { it > 10 } shouldBe 11
+
+    @Test fun counterImpl() =
+            run { 0 to 0 }
+                    .doing { it.second to (it.second + 1) }
+                    .until { it.first > 10 } shouldBe (11 to 12)
 }
