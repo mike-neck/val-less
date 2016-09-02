@@ -28,3 +28,8 @@ fun <P, Q, R, F : (P) -> ((Q) -> R)> F.flip(): (Q) -> ((P) -> R) = { q -> { p ->
 infix fun <P, R> P.`$`(f: (P) -> R): R = f(this)
 
 infix operator fun <P, Q, F : (P) -> Q> F.times(p: P): Q = this(p)
+
+/**
+ * Identity function
+ */
+fun <T> id(): (T) -> T = { it }

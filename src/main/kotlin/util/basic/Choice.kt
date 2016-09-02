@@ -17,16 +17,27 @@ package util.basic
 
 import java.util.*
 
-sealed class Choice<out F, out S> {
+sealed class Choice<F, out S> {
 
     abstract val first: F
     abstract val second: S
 
-    class First<out F, out S>(override val first: F) : Choice<F, S>() {
+    class First<F, out S>(override val first: F) : Choice<F, S>() {
         override val second: S get() = throw NoSuchElementException("This is first.")
     }
 
-    class Second<out F, out S>(override val second: S) : Choice<F, S>() {
+    class Second<F, out S>(override val second: S) : Choice<F, S>() {
         override val first: F get() = throw NoSuchElementException("This is second.")
+    }
+
+    interface ResultBuilder<F, out S, R> {
+        fun onSecond(sh: (S) -> R): R
+    }
+
+    fun <R> onFirst(fh: (F) -> R): ResultBuilder<F, S, R> = object : ResultBuilder<F, S, R> {
+        override fun onSecond(sh: (S) -> R): R = when (this@Choice) {
+            is Choice.First -> fh(this@Choice.first)
+            is Choice.Second -> sh(this@Choice.second)
+        }
     }
 }
