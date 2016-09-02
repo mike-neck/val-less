@@ -25,10 +25,10 @@ package valless.util
  * @param [f] mapping function.
  * @return [R] if the receiver is not null. `null` if the receiver is null.
  */
-infix fun <T,R> T?.then(f: (T) -> R?): R? = if (this == null) null else f(this)
+infix fun <T, R> T?.make(f: (T) -> R?): R? = if (this == null) null else f(this)
 
-/** shortcut of [then] */
-infix fun <T, R> T?.`^`(f: (T) -> R?): R? = this.then(f)
+/** shortcut of [make] */
+infix fun <T, R> T?.`^`(f: (T) -> R?): R? = this.make(f)
 
 /**
  * Avoiding compiler warning.
