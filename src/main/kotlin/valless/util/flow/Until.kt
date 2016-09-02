@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package util.flow
+package valless.util.flow
 
 fun <T> T.doing(calc: (T) -> T): Until<T> = object : Until<T> {
     override fun until(condition: (T) -> Boolean): T = go(this@doing, condition)

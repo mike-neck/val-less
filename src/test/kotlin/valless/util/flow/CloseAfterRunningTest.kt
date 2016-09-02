@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package util.flow
+package valless.util.flow
 
 import org.junit.Test
-import util.shouldBe
-import util.unit
+import valless.util.shouldBe
+import valless.util.unit
 
 class CloseAfterRunningTest {
 

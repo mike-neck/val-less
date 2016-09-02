@@ -99,5 +99,5 @@ class Func(val arg: List<Type.Arg>, val rtn: Type.Return = Type.Normal()) {
         .map { "val ${it.first} F.curry: ${it.second} get() = ${it.third}" }
         .mapIndexed { i, s -> "/* Function${i + 1} curry */" to s }
         .map { "${it.first}\n${it.second}" }
-        .let { File("src/main/kotlin/util/function/curry.kt") to it }
+        .let { File("src/main/kotlin/valless/util/function/curry.kt") to it }
         .unit { it.first.writeText(it.second.joinToString("\n\n")) }

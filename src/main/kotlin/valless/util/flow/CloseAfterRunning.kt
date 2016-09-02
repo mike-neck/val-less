@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package util.flow
+package valless.util.flow
 
-import util.basic.Choice
-import util.function.`$`
-import util.function.id
-import util.initialize
+import valless.util.basic.Choice
+import valless.util.function.`$`
+import valless.util.function.id
+import valless.util.initialize
 
 fun <C : AutoCloseable, R> C.run(f: (C) -> R): TryWithResource<R> = CloseAfterRunning(this, f)
 
