@@ -57,5 +57,7 @@ hs_err_pid*
 *~
 .DS_Store
 
+memo/
+
 # auto generated file
 curry.kt
