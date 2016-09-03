@@ -30,19 +30,21 @@ enum class Bool(val raw: Boolean) : _0<Bool.Companion> {
 
     abstract operator fun unaryMinus(): Bool
 
-    companion object {
+    companion object : Eq.__0<Bool>, Ord.__0<Bool>, Enum.__0<Bool> {
 
-        val eqInstance: Eq<Bool> = fromEquals()
+        override val eqInstance: Eq<Bool> = fromEquals()
 
-        val ordInstance: Ord<Bool> = object : Ord<Bool> {
+        override val ordInstance: Ord<Bool> = object : Ord<Bool> {
             override fun compare(x: Bool, y: Bool): Ordering =
                     If(x == True && y == True) { Ordering.EQ }
                             .elIf(x == True && y == False) { Ordering.GT }
                             .elIf(x == False && y == True) { Ordering.LT }
                             .els { Ordering.EQ }
+
+            override val asEq: Eq<Bool> get() = eqInstance
         }
 
-        val enumInstance: Enum<Bool> = object : Enum<Bool> {
+        override val enumInstance: Enum<Bool> = object : Enum<Bool> {
             override fun toEnum(i: Int): Bool =
                     When<Int, Bool>(i)
                             .case { it == 0 }.then { False }

@@ -24,6 +24,10 @@ interface Ord<T> : _1<Ord.Å, T> {
 
     object Å
 
+    interface __0<T> {
+        val ordInstance: Ord<T>
+    }
+
     fun compare(x: T, y: T): Ordering
 
     val asEq: Eq<T> get() = object : Eq<T> {
@@ -49,10 +53,10 @@ enum class Ordering : _0<Ordering.Companion>, Comparable<Ordering> {
     EQ,
     GT;
 
-    companion object {
-        val eqInstance: Eq<Ordering> = Ord.fromComparable<Ordering>().asEq
-        val ordInstance: Ord<Ordering> = Ord.fromComparable()
-        val enumInstance: Enum<Ordering> = object : Enum<Ordering> {
+    companion object : Eq.__0<Ordering>, Ord.__0<Ordering>, Enum.__0<Ordering> {
+        override val eqInstance: Eq<Ordering> = Ord.fromComparable<Ordering>().asEq
+        override val ordInstance: Ord<Ordering> = Ord.fromComparable()
+        override val enumInstance: Enum<Ordering> = object : Enum<Ordering> {
             override fun toEnum(i: Int): Ordering =
                     When<Int, Ordering>(i)
                             .case { it == 0 }.then { LT }

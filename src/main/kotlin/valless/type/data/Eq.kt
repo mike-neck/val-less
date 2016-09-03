@@ -22,6 +22,10 @@ interface Eq<T> : _1<Eq.Å, T> {
 
     object Å
 
+    interface __0<T> {
+        val eqInstance: Eq<T>
+    }
+
     /**
      * Object equality.
      *

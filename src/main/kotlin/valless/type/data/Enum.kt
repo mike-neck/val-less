@@ -20,6 +20,10 @@ import valless.util.function.`$`
 
 interface Enum<T> : _1<Enum.Å, T> {
 
+    interface __0<T> {
+        val enumInstance: Enum<T>
+    }
+
     object Å
 
     fun toEnum(i: Int): T
