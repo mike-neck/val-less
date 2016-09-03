@@ -44,11 +44,13 @@ interface Ord<T> : _1<Ord.Å, T> {
     }
 }
 
-enum class Ordering : _0<Ordering.Companion> {
+enum class Ordering : _0<Ordering.Companion>, Comparable<Ordering> {
     LT,
     EQ,
     GT;
 
     companion object {
+        val eqInstance: Eq<Ordering> = Ord.fromComparable<Ordering>().asEq
+        val ordInstance: Ord<Ordering> = Ord.fromComparable()
     }
 }
