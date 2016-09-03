@@ -52,5 +52,32 @@ enum class Ordering : _0<Ordering.Companion>, Comparable<Ordering> {
     companion object {
         val eqInstance: Eq<Ordering> = Ord.fromComparable<Ordering>().asEq
         val ordInstance: Ord<Ordering> = Ord.fromComparable()
+        val enumInstance: Enum<Ordering> = object : Enum<Ordering> {
+            override fun toEnum(i: Int): Ordering =
+                    When<Int, Ordering>(i)
+                            .case { it == 0 }.then { LT }
+                            .case { it == 1 }.then { EQ }
+                            .case { it == 2 }.then { GT }
+                            .els { throw IllegalArgumentException("Illegal Argument for Enum.Ordering.toEnum") }
+
+            override fun fromEnum(e: Ordering): Int =
+                    When<Ordering, Int>(e)
+                            .case { it == LT }.then { 0 }
+                            .case { it == EQ }.then { 1 }
+                            .case { it == GT }.then { 2 }
+                            .els { throw IllegalArgumentException("Illegal Argument for Enum.Ordering.fromEnum") }
+
+            override fun succ(e: Ordering): Ordering =
+                    When<Ordering, Ordering>(e)
+                            .case { it == LT }.then { EQ }
+                            .case { it == EQ }.then { GT }
+                            .els { throw IllegalArgumentException("Illegal Argument for Enum.Ordering.succ") }
+
+            override fun pred(e: Ordering): Ordering =
+                    When<Ordering, Ordering>(e)
+                            .case { it == GT }.then { EQ }
+                            .case { it == EQ }.then { LT }
+                            .els { throw IllegalArgumentException("Illegal Argument for Enum.Ordering.pred") }
+        }
     }
 }
