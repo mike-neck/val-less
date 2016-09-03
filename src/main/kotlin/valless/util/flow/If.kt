@@ -36,7 +36,7 @@ class If<R>(private val condition: Boolean, private val onTrue: () -> R) {
 /**
  * Making it simple to start if statement.
  */
-infix fun <R> Boolean.so(onTrue: () -> R): If<R> = If(this, onTrue)
+infix fun <R> Boolean.ifSo(onTrue: () -> R): If<R> = If(this, onTrue)
 
 /**
  * Represents <code>when</code> statement.
@@ -91,6 +91,6 @@ private sealed class Elements<out T> {
 
     companion object {
         operator fun <T> invoke(list: List<T>): Elements<T> =
-                list.isEmpty().so<Elements<T>> { Empty() }.els { HasElements(list.first(), list.drop(1)) }
+                list.isEmpty().ifSo<Elements<T>> { Empty() }.els { HasElements(list.first(), list.drop(1)) }
     }
 }

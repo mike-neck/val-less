@@ -16,6 +16,12 @@
 package valless.type
 
 /**
+ * Represents a higher kinded type of arity 0.
+ * @param [M] - a 'witness' (cited at highj) type of the type to be lifted as a type constructor.
+ */
+interface _0<M>
+
+/**
  * Represents a higher kinded type of arity 1.
  * @param [M] - a 'witness' (cited at highj) type of the type to be lifted as a type constructor.
  * @param [A] - the 1st parameter of the type constructor.
