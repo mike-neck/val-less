@@ -32,17 +32,17 @@ interface Functor<F> : Invariant<F> {
     /**
      * <code>Data.Functor.&lt;$</code>
      */
-    fun <T, R> `-$`(v: R, obj: _1<F, T>): _1<F, R> = map(obj) { v }
+    fun <T, R> `|-$`(v: R, obj: _1<F, T>): _1<F, R> = map(obj) { v }
 
     /**
      * <code>Data.Functor.$&gt;</code>
      */
-    fun <T, R> `$-`(obj: _1<F, T>, v: R): _1<F, R> = map(obj) { v }
+    fun <T, R> `$-|`(obj: _1<F, T>, v: R): _1<F, R> = map(obj) { v }
 
     /**
      * <code>Data.Functor.void</code>
      */
-    fun <T> void(obj: _1<F, T>): _1<F, `()`> = `-$`(`()`, obj)
+    fun <T> void(obj: _1<F, T>): _1<F, `()`> = `|-$`(`()`, obj)
 
     override fun <T, R> imap(obj: _1<F, T>, f: (T) -> R, g: (R) -> T): _1<F, R> = map(obj, f)
 }
