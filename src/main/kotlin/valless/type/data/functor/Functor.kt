@@ -18,8 +18,7 @@ package valless.type.data.functor
 import valless.type._1
 import valless.type.data.tuple.`()`
 
-interface Functor<F> {
-
+interface Functor<F> : Invariant<F> {
     /**
      * fmap
      */
@@ -44,4 +43,6 @@ interface Functor<F> {
      * <code>Data.Functor.void</code>
      */
     fun <T> void(obj: _1<F, T>): _1<F, `()`> = `-$`(`()`, obj)
+
+    override fun <T, R> imap(obj: _1<F, T>, f: (T) -> R, g: (R) -> T): _1<F, R> = map(obj, f)
 }
