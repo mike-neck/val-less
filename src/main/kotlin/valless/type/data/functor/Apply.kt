@@ -16,13 +16,14 @@
 package valless.type.data.functor
 
 import valless.type._1
+import valless.type.controll.Applicative
 import valless.type.data.function.Function.const
 import valless.util.function.flip
 
 /**
  * A strong lax semimonoidal endofunctor.
  *
- * This is equivalent to an [Applicative] without [pure].
+ * This is equivalent to an [Applicative] without [Applicative.pure].
  */
 interface Apply<F> : Functor<F> {
 
