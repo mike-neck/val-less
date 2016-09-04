@@ -16,8 +16,9 @@
 package valless.type.controll
 
 import valless.type._1
+import valless.type.data.functor.Apply
 
-interface Applicative<F> {
+interface Applicative<F> : Apply<F> {
 
     fun <T> pure(value: T): _1<F, T>
 }
