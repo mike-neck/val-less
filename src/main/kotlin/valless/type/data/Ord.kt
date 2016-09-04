@@ -24,7 +24,7 @@ interface Ord<T> : _1<Ord.Å, T> {
 
     object Å
 
-    interface __0<T> {
+    interface Instance<T> {
         val ordInstance: Ord<T>
     }
 
@@ -53,7 +53,7 @@ enum class Ordering : _0<Ordering.Companion>, Comparable<Ordering> {
     EQ,
     GT;
 
-    companion object : Eq.__0<Ordering>, Ord.__0<Ordering>, Enum.__0<Ordering> {
+    companion object : Eq.Instance<Ordering>, Ord.Instance<Ordering>, Enum.Instance<Ordering> {
         override val eqInstance: Eq<Ordering> = Ord.fromComparable<Ordering>().asEq
         override val ordInstance: Ord<Ordering> = Ord.fromComparable()
         override val enumInstance: Enum<Ordering> = object : Enum<Ordering> {

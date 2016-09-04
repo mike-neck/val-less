@@ -30,7 +30,7 @@ enum class Bool(val raw: Boolean) : _0<Bool.Companion> {
 
     abstract operator fun unaryMinus(): Bool
 
-    companion object : Eq.__0<Bool>, Ord.__0<Bool>, Enum.__0<Bool> {
+    companion object : Eq.Instance<Bool>, Ord.Instance<Bool>, Enum.Instance<Bool> {
 
         override val eqInstance: Eq<Bool> = fromEquals()
 
