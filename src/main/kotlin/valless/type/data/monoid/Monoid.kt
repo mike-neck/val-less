@@ -30,4 +30,17 @@ interface Monoid<T> {
     fun mempty(): T
 
     fun append(x: T, y: T): T
+
+    interface Builder<T> {
+        fun append(appender: (T, T) -> T): Monoid<T>
+    }
+
+    companion object {
+        operator fun <T> invoke(empty: () -> T): Builder<T> = object : Builder<T> {
+            override fun append(appender: (T, T) -> T): Monoid<T> = object : Monoid<T> {
+                override fun mempty(): T = empty()
+                override fun append(x: T, y: T): T = appender(x, y)
+            }
+        }
+    }
 }
