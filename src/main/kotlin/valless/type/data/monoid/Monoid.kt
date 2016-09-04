@@ -27,9 +27,13 @@ interface Monoid<T> {
         fun <T> monoidInstance(): _1_<_1<M, T>>
     }
 
-    fun mempty(): T
+    fun empty(): T
+
+    val mempty: T get() = empty()
 
     fun append(x: T, y: T): T
+
+    val mappend: (T) -> ((T) -> T) get() = { x -> { y -> append(x, y) } }
 
     interface Builder<T> {
         fun append(appender: (T, T) -> T): Monoid<T>
@@ -38,7 +42,7 @@ interface Monoid<T> {
     companion object {
         fun <T> empty(empty: () -> T): Builder<T> = object : Builder<T> {
             override fun append(appender: (T, T) -> T): Monoid<T> = object : Monoid<T> {
-                override fun mempty(): T = empty()
+                override fun empty(): T = empty()
                 override fun append(x: T, y: T): T = appender(x, y)
             }
         }

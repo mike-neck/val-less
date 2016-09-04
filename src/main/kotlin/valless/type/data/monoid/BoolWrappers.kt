@@ -36,7 +36,7 @@ object AnyInstances :
     override val ordInstance: Ord<Any> get() = Ord.fromComparable<Any>()
 
     override val monoidInstance: Monoid<Any> get() = object : Monoid<Any> {
-        override fun mempty(): Any = Any(Bool.False)
+        override fun empty(): Any = Any(Bool.False)
 
         override fun append(x: Any, y: Any): Any = If(x.any == Bool.False) { y }.els { x }
     }
@@ -55,7 +55,7 @@ object AllInstances :
         , Monoid._1_<All> {
 
     override val monoidInstance: Monoid<All> get() = object : Monoid<All> {
-        override fun mempty(): All = All(Bool.True)
+        override fun empty(): All = All(Bool.True)
 
         override fun append(x: All, y: All): All =
                 If(y.all == Bool.False) { y }.els { x }

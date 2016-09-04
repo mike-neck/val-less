@@ -29,7 +29,7 @@ class Endo<T>(val appEndo: (T) -> T) : _1<Endo.Companion, T> {
                 object : Monoid._1_<_1<Companion, T>> {
                     override val monoidInstance: Monoid<_1<Companion, T>>
                         get() = object : Monoid<_1<Companion, T>> {
-                            override fun mempty(): _1<Companion, T> = Endo(id())
+                            override fun empty(): _1<Companion, T> = Endo(id())
 
                             override fun append(x: _1<Companion, T>, y: _1<Companion, T>): _1<Companion, T> =
                                     Endo(x.`%`.appEndo + y.`%`.appEndo)
@@ -37,3 +37,5 @@ class Endo<T>(val appEndo: (T) -> T) : _1<Endo.Companion, T> {
                 }
     }
 }
+
+val <T> _1<Endo.Companion, T>.narrow: Endo<T> get() = this as Endo<T>
