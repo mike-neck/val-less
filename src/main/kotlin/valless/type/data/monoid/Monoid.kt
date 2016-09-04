@@ -15,10 +15,16 @@
  */
 package valless.type.data.monoid
 
+import valless.type._1
+
 interface Monoid<T> {
 
     interface Instance<T> {
         val monoidInstance: Monoid<T>
+    }
+
+    interface _2_<M> {
+        fun <T> monoidInstance(): Instance<_1<M, T>>
     }
 
     fun mempty(): T
