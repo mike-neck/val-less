@@ -15,7 +15,6 @@
  */
 package valless.type.data
 
-import valless.type._0
 import valless.type._1
 import valless.util.flow.When
 import valless.util.flow.ifSo
@@ -48,40 +47,3 @@ interface Ord<T> : _1<Ord.Å, T> {
     }
 }
 
-enum class Ordering : _0<Ordering.Companion>, Comparable<Ordering> {
-    LT,
-    EQ,
-    GT;
-
-    companion object : Eq.Instance<Ordering>, Ord.Instance<Ordering>, Enum.Instance<Ordering> {
-        override val eqInstance: Eq<Ordering> = Ord.fromComparable<Ordering>().asEq
-        override val ordInstance: Ord<Ordering> = Ord.fromComparable()
-        override val enumInstance: Enum<Ordering> = object : Enum<Ordering> {
-            override fun toEnum(i: Int): Ordering =
-                    When<Int, Ordering>(i)
-                            .case { it == 0 }.then { LT }
-                            .case { it == 1 }.then { EQ }
-                            .case { it == 2 }.then { GT }
-                            .els { throw IllegalArgumentException("Illegal Argument for Enum.Ordering.toEnum") }
-
-            override fun fromEnum(e: Ordering): Int =
-                    When<Ordering, Int>(e)
-                            .case { it == LT }.then { 0 }
-                            .case { it == EQ }.then { 1 }
-                            .case { it == GT }.then { 2 }
-                            .els { throw IllegalArgumentException("Illegal Argument for Enum.Ordering.fromEnum") }
-
-            override fun succ(e: Ordering): Ordering =
-                    When<Ordering, Ordering>(e)
-                            .case { it == LT }.then { EQ }
-                            .case { it == EQ }.then { GT }
-                            .els { throw IllegalArgumentException("Illegal Argument for Enum.Ordering.succ") }
-
-            override fun pred(e: Ordering): Ordering =
-                    When<Ordering, Ordering>(e)
-                            .case { it == GT }.then { EQ }
-                            .case { it == EQ }.then { LT }
-                            .els { throw IllegalArgumentException("Illegal Argument for Enum.Ordering.pred") }
-        }
-    }
-}

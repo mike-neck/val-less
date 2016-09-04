@@ -17,6 +17,10 @@ package valless.type.data.monoid
 
 interface Monoid<T> {
 
+    interface Instance<T> {
+        val monoidInstance: Monoid<T>
+    }
+
     fun mempty(): T
 
     fun append(x: T, y: T): T
