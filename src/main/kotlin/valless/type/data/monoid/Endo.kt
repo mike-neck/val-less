@@ -23,6 +23,8 @@ class Endo<T>(val appEndo: (T) -> T) : _1<Endo.Companion, T> {
 
     companion object : Monoid._2_<Companion> {
 
+        fun <T> monoid(): Monoid<_1<Companion, T>> = monoidInstance<T>().monoidInstance
+
         val <T> _1<Companion, T>.`%`: Endo<T> get() = this as Endo<T>
 
         override fun <T> monoidInstance(): Monoid._1_<_1<Companion, T>> =
@@ -39,3 +41,6 @@ class Endo<T>(val appEndo: (T) -> T) : _1<Endo.Companion, T> {
 }
 
 val <T> _1<Endo.Companion, T>.narrow: Endo<T> get() = this as Endo<T>
+
+@Suppress("UNCHECKED_CAST")
+val <T> Monoid<_1<Endo.Companion, T>>.narrow: Monoid<Endo<T>> get() = this as Monoid<Endo<T>>
