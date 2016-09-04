@@ -35,7 +35,7 @@ interface _1<M, A>
  * @param [B] - the 1st parameter of the type constructor.
  * @param [A] - the 2nd parameter of the type constructor.
  */
-interface _2<M, B, A>
+interface _2<M, B, A> : _1<_1<M, B>, A>
 
 
 /**
@@ -45,7 +45,7 @@ interface _2<M, B, A>
  * @param [B] - the 2nd parameter of the type constructor.
  * @param [A] - the 3rd parameter of the type constructor.
  */
-interface _3<M, C, B, A>
+interface _3<M, C, B, A> : _2<_1<M, C>, B, A>
 
 
 /**
@@ -56,4 +56,13 @@ interface _3<M, C, B, A>
  * @param [B] - the 3rd parameter of the type constructor.
  * @param [A] - the 4th parameter of the type constructor.
  */
-interface _4<M, D, C, B, A>
+interface _4<M, D, C, B, A> : _3<_1<M, D>, C, B, A>
+
+object Cast {
+
+    fun <M, B, A> _1<_1<M, B>, A>.cast(): _2<M, B, A> = this as _2<M, B, A>
+
+    fun <M, C, B, A> _1<_1<_1<M, C>, B>, A>.cast(): _3<M, C, B, A> = this as _3<M, C, B, A>
+
+    fun <M, D, C, B, A> _1<_1<_1<_1<M, D>, C>, B>, A>.cast(): _4<M, D, C, B, A> = this as _4<M, D, C, B, A>
+}
