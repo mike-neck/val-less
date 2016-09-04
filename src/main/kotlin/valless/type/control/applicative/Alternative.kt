@@ -16,7 +16,6 @@
 package valless.type.control.applicative
 
 import valless.type._1
-import valless.type.control.Applicative
 
 interface Alternative<F> : Applicative<F> {
 
