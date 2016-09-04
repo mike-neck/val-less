@@ -33,11 +33,8 @@ object SumInstances : Monoid._1_<Sum>
 
     override val ordInstance: Ord<Sum> get() = Ord.fromComparable()
 
-    override val monoidInstance: Monoid<Sum> get() = object : Monoid<Sum> {
-        override fun mempty(): Sum = Sum(0)
-
-        override fun append(x: Sum, y: Sum): Sum = Sum(x.sum + y.sum)
-    }
+    override val monoidInstance: Monoid<Sum>
+        get() = Monoid.empty { Sum(0) }.append { x, y -> Sum(x.sum + y.sum) }
 }
 
 /**
@@ -57,5 +54,5 @@ object ProductInstance :
     override val ordInstance: Ord<Product> get() = Ord.fromComparable()
 
     override val monoidInstance: Monoid<Product>
-        get() = Monoid { Product(1) }.append { x: Product, y: Product -> Product(x.product * y.product) }
+        get() = Monoid.empty { Product(1) }.append { x, y -> Product(x.product * y.product) }
 }
