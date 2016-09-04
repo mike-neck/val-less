@@ -13,12 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package valless.type.controll
+package valless.type.control
 
 import valless.type._1
 import valless.type.data.functor.Apply
 
 interface Applicative<F> : Apply<F> {
 
+    /**
+     * <code>Control.Applicative.pure</code>
+     */
     fun <T> pure(value: T): _1<F, T>
 }
