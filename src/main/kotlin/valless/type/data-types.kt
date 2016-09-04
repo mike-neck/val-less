@@ -26,7 +26,7 @@ interface _0<M>
  * @param [M] - a 'witness' (cited at highj) type of the type to be lifted as a type constructor.
  * @param [A] - the 1st parameter of the type constructor.
  */
-interface _1<M, A>
+interface _1<M, A> : _0<M>
 
 
 /**
