@@ -28,9 +28,9 @@ data class Any(val any: Bool) : Comparable<Any>, _0<AnyInstances> {
 }
 
 object AnyInstances :
-        Eq.Instance<Any>
-        , Ord.Instance<Any>
-        , Monoid.Instance<Any> {
+        Eq._1_<Any>
+        , Ord._1_<Any>
+        , Monoid._1_<Any> {
     override val eqInstance: Eq<Any> get() = Eq.fromEquals()
 
     override val ordInstance: Ord<Any> get() = Ord.fromComparable<Any>()
@@ -50,9 +50,9 @@ data class All(val all: Bool) : Comparable<All>, _0<AllInstances> {
 }
 
 object AllInstances :
-        Eq.Instance<All>
-        , Ord.Instance<All>
-        , Monoid.Instance<All> {
+        Eq._1_<All>
+        , Ord._1_<All>
+        , Monoid._1_<All> {
 
     override val monoidInstance: Monoid<All> get() = object : Monoid<All> {
         override fun mempty(): All = All(Bool.True)

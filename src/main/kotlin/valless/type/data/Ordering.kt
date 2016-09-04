@@ -11,10 +11,10 @@ enum class Ordering : _0<Ordering.Companion>, Comparable<Ordering> {
     GT;
 
     companion object :
-            Eq.Instance<Ordering>
-            , Ord.Instance<Ordering>
-            , Enum.Instance<Ordering>
-            , Monoid.Instance<Ordering> {
+            Eq._1_<Ordering>
+            , Ord._1_<Ordering>
+            , Enum._1_<Ordering>
+            , Monoid._1_<Ordering> {
         override val eqInstance: Eq<Ordering> = Ord.fromComparable<Ordering>().asEq
 
         override val ordInstance: Ord<Ordering> = Ord.fromComparable()

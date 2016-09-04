@@ -25,8 +25,8 @@ class Endo<T>(val appEndo: (T) -> T) : _1<Endo.Companion, T> {
 
         val <T> _1<Companion, T>.`%`: Endo<T> get() = this as Endo<T>
 
-        override fun <T> monoidInstance(): Monoid.Instance<_1<Companion, T>> =
-                object : Monoid.Instance<_1<Companion, T>> {
+        override fun <T> monoidInstance(): Monoid._1_<_1<Companion, T>> =
+                object : Monoid._1_<_1<Companion, T>> {
                     override val monoidInstance: Monoid<_1<Companion, T>>
                         get() = object : Monoid<_1<Companion, T>> {
                             override fun mempty(): _1<Companion, T> = Endo(id())

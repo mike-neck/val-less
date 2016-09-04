@@ -20,7 +20,7 @@ import valless.util.function.`$`
 
 interface Enum<T> : _1<Enum.Å, T> {
 
-    interface Instance<T> {
+    interface _1_<T> {
         val enumInstance: Enum<T>
     }
 

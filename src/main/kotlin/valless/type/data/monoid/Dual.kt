@@ -29,14 +29,14 @@ data class Dual<T : _0<O>, O>(val dual: T) : _1<Dual.Companion, T> {
     companion object {
 
         inline fun <T : _0<O>, reified O> instance(kc: KClass<O> = O::class): Instance<T, O>
-                where O : Eq.Instance<T>, O : Ord.Instance<T> = kc.objectInstance.make { Instance(it) } ?: throw IllegalStateException("No instance found.")
+                where O : Eq._1_<T>, O : Ord._1_<T> = kc.objectInstance.make { Instance(it) } ?: throw IllegalStateException("No instance found.")
     }
 
     class Instance<T : _0<O>, O>(val obj: O) :
-            Eq.Instance<Dual<T, O>>
-            , Ord.Instance<Dual<T, O>>
-    where O : Eq.Instance<T>
-    , O : Ord.Instance<T> {
+            Eq._1_<Dual<T, O>>
+            , Ord._1_<Dual<T, O>>
+    where O : Eq._1_<T>
+    , O : Ord._1_<T> {
 
         override val eqInstance: Eq<Dual<T, O>> get() = object : Eq<Dual<T, O>> {
             override fun eq(x: Dual<T, O>, y: Dual<T, O>): Bool = obj.eqInstance.eq(x.dual, y.dual)

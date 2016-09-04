@@ -22,7 +22,7 @@ interface Eq<T> : _1<Eq.Å, T> {
 
     object Å
 
-    interface Instance<T> {
+    interface _1_<T> {
         val eqInstance: Eq<T>
     }
 

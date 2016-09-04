@@ -23,7 +23,7 @@ interface Ord<T> : _1<Ord.Å, T> {
 
     object Å
 
-    interface Instance<T> {
+    interface _1_<T> {
         val ordInstance: Ord<T>
     }
 

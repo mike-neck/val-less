@@ -19,12 +19,12 @@ import valless.type._1
 
 interface Monoid<T> {
 
-    interface Instance<T> {
+    interface _1_<T> {
         val monoidInstance: Monoid<T>
     }
 
     interface _2_<M> {
-        fun <T> monoidInstance(): Instance<_1<M, T>>
+        fun <T> monoidInstance(): _1_<_1<M, T>>
     }
 
     fun mempty(): T
