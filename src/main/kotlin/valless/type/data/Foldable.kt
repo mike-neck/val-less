@@ -16,10 +16,8 @@
 package valless.type.data
 
 import valless.type._1
-import valless.type.data.monoid.Dual
-import valless.type.data.monoid.Endo
-import valless.type.data.monoid.Monoid
-import valless.type.data.monoid.narrow
+import valless.type.data.monoid.*
+import valless.type.data.monoid.Any
 import valless.util.function.`$`
 import valless.util.function.flip
 import valless.util.function.id
@@ -67,6 +65,8 @@ interface Foldable<F> {
                     .let { foldMap(Dual.monoid(Endo.monoid<R>().narrow), ta, it) }
                     .narrow.dual.appEndo(init)
 
+    private fun <T> toDual(): (T) -> Dual<T> = { Dual(it) }
+
     /**
      * <code>Data.Foldable.foldl'</code>
      * <code>(b -> a -> b) -> b -> t a -> b</code>
@@ -89,9 +89,37 @@ interface Foldable<F> {
     private fun <P, Q, R> ff(f: (R) -> ((P) -> R)): (P) -> (((R) -> Q) -> ((R) -> Q)) =
             { p -> { g -> { r -> f(r)(p) `$` g } } }
 
+    /**
+     * <code>Data.Foldable.null</code>
+     */
     fun <T> isNull(ta: _1<F, T>): Bool = foldr(ta, Bool.True) { { Bool.False } }
 
+    /**
+     * <code>Data.Foldable.length</code>
+     */
     fun <T> size(ta: _1<F, T>): Int = foldld(ta, 0) { c -> { c + 1 } }
 
-    fun <T> toDual(): (T) -> Dual<T> = { Dual(it) }
+    /**
+     * <code>Data.Foldable.any</code>
+     *
+     * default implementation is
+     * <code><pre>
+     *     any :: Foldable t => (a -> Bool) -> t a -> Bool
+     *     any p = getAny . foldMap (Any . p)
+     * </pre></code>
+     */
+    fun <T> any(ta: _1<F, T>, pred: (T) -> Bool): Bool =
+            foldMap(AnyInstances.monoidInstance, ta, pred + ::Any).any
+
+    /**
+     * <code>Data.Foldable.all</code>
+     *
+     * default implementation is
+     * <code><pre>
+     *     all :: Foldable t => (a -> Bool) -> t a -> Bool
+     *     all p = getAll . foldMap (All . p)
+     * </pre></code>
+     */
+    fun <T> all(ta: _1<F, T>, pred: (T) -> Bool): Bool =
+            foldMap(AllInstances.monoidInstance, ta, pred + ::All).all
 }
