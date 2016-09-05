@@ -27,11 +27,26 @@ import valless.util.function.flip
  */
 interface Apply<F> : Functor<F> {
 
+    /**
+     * Haskell's &lt;*&gt;
+     */
     infix fun <T, R, G : (T) -> R> _1<F, G>.`(_)`(obj: _1<F, T>): _1<F, R>
 
-    fun <T, R> _1<F, T>.`(_`(other: _1<F, R>): _1<F, T> = (this `$$` const<T, R>()) `(_)` other
+    fun <T, R, G : (T) -> R> ap(f: _1<F, G>, obj: _1<F, T>): _1<F, R> = f `(_)` obj
 
-    fun <T, R> _1<F, T>.`_)`(other: _1<F, R>): _1<F, R> = (this `$$` const<R, T>().flip()) `(_)` other
+    /**
+     * Haskell's &lt;*
+     */
+    fun <T, R> takeLeft(self: _1<F, T>, other: _1<F, R>): _1<F, T> = (self `$$` const<T, R>()) `(_)` other
+
+    fun <T, R> lft(): (_1<F, T>) -> ((_1<F, R>) -> _1<F, T>) = { s -> { o -> takeLeft(s, o) } }
+
+    /**
+     * Haskell's *&gt;
+     */
+    fun <T, R> takeRight(self: _1<F, T>, other: _1<F, R>): _1<F, R> = (self `$$` const<R, T>().flip()) `(_)` other
+
+    fun <T, R> rgt(): (_1<F, T>) -> ((_1<F, R>) -> _1<F, R>) = { s -> { o -> takeRight(s, o) } }
 
     val <P, Q, R, G : (P) -> ((Q) -> R)> G.liftF2: (_1<F, P>) -> ((_1<F, Q>) -> _1<F, R>)
         get() = { p -> { q -> (p `$$` this) `(_)` q } }

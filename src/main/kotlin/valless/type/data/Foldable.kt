@@ -16,6 +16,7 @@
 package valless.type.data
 
 import valless.type._1
+import valless.type.control.applicative.Applicative
 import valless.type.data.monoid.*
 import valless.util.function.`$`
 import valless.util.function.flip
@@ -147,4 +148,10 @@ interface Foldable<F> {
      */
     fun product(xs: _1<F, Long>): Long =
             foldMap(ProductInstance.monoidInstance, xs, ::Product).product
+
+    /**
+     * <code>Data.Foldable.traverse_</code>
+     */
+    fun <M, T, R> traverse_(m: Applicative<M>, ta: _1<F, T>, f: (T) -> _1<M, R>): _1<M, Unit> =
+            foldr(ta, m.pure(Unit), f + m.rgt<R, Unit>())
 }
