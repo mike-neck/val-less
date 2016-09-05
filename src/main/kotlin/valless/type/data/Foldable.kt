@@ -18,6 +18,8 @@ package valless.type.data
 import valless.type._1
 import valless.type.control.applicative.Applicative
 import valless.type.data.monoid.*
+import valless.type.data.monoid.Dual.Companion.toDual
+import valless.type.data.monoid.Endo.Companion.toEndo
 import valless.util.function.`$`
 import valless.util.function.flip
 import valless.util.function.id
@@ -35,8 +37,6 @@ interface Foldable<F> {
     fun <T, R> foldr(ta: _1<F, T>, init: R, f: (T) -> ((R) -> R)): R =
             foldMap(Endo.monoid<R>(), ta, f + toEndo())
                     .narrow.appEndo(init)
-
-    private fun <T> toEndo(): ((T) -> T) -> Endo<T> = { f -> Endo(f) }
 
     /**
      * <code>Data.Foldable.foldMap</code>
@@ -64,8 +64,6 @@ interface Foldable<F> {
             (f.flip() + toEndo() + toDual())
                     .let { foldMap(Dual.monoid(Endo.monoid<R>().narrow), ta, it) }
                     .narrow.dual.appEndo(init)
-
-    private fun <T> toDual(): (T) -> Dual<T> = { Dual(it) }
 
     /**
      * <code>Data.Foldable.foldl'</code>

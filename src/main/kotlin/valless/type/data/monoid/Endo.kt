@@ -23,6 +23,8 @@ class Endo<T>(val appEndo: (T) -> T) : _1<Endo.Companion, T> {
 
     companion object : Monoid._2_<Companion> {
 
+        fun <T> toEndo(): ((T) -> T) -> Endo<T> = ::Endo
+
         fun <T> monoid(): Monoid<_1<Companion, T>> = monoidInstance<T>().monoidInstance
 
         val <T> _1<Companion, T>.`%`: Endo<T> get() = this as Endo<T>

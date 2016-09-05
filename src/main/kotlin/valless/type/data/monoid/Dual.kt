@@ -29,6 +29,8 @@ data class Dual<T>(val dual: T) : _1<Dual.Companion, T> {
 
     companion object {
 
+        fun <T> toDual(): (T) -> Dual<T> = ::Dual
+
         inline fun <T : _0<O>, reified O> instance(kc: KClass<O> = O::class): Instance<T, O>
                 where O : Eq._1_<T>, O : Ord._1_<T> = kc.objectInstance.make { Instance(it) } ?: throw IllegalStateException("No instance found.")
 
