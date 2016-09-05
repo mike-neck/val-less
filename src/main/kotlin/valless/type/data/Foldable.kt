@@ -17,7 +17,6 @@ package valless.type.data
 
 import valless.type._1
 import valless.type.data.monoid.*
-import valless.type.data.monoid.Any
 import valless.util.function.`$`
 import valless.util.function.flip
 import valless.util.function.id
@@ -109,7 +108,7 @@ interface Foldable<F> {
      * </pre></code>
      */
     fun <T> any(ta: _1<F, T>, pred: (T) -> Bool): Bool =
-            foldMap(AnyInstances.monoidInstance, ta, pred + ::Any).any
+            foldMap(OrInstances.monoidInstance, ta, pred + ::Or).any
 
     /**
      * <code>Data.Foldable.all</code>
@@ -121,5 +120,8 @@ interface Foldable<F> {
      * </pre></code>
      */
     fun <T> all(ta: _1<F, T>, pred: (T) -> Bool): Bool =
-            foldMap(AllInstances.monoidInstance, ta, pred + ::All).all
+            foldMap(AndInstances.monoidInstance, ta, pred + ::And).all
+
+    fun and(bs: _1<F, Bool>): Bool = foldMap(AndInstances.monoidInstance, bs, ::And).all
+
 }
