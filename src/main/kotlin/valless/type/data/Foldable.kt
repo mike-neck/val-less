@@ -131,4 +131,20 @@ interface Foldable<F> {
      * <code>Data.Foldable.or</code>
      */
     fun or(bs: _1<F, Bool>): Bool = foldMap(OrInstances.monoidInstance, bs, ::Or).or
+
+    /**
+     * <code>Data.Foldable.elem</code>
+     */
+    fun <T> elem(e: Eq<T>, sbj: T, xs: _1<F, T>): Bool = any(xs) { e.eq(it, sbj) }
+
+    /**
+     * <code>Data.Foldable.sum</code>
+     */
+    fun sum(xs: _1<F, Int>): Int = foldMap(SumInstances.monoidInstance, xs, ::Sum).sum
+
+    /**
+     * <code>Data.Foldable.product</code>
+     */
+    fun product(xs: _1<F, Long>): Long =
+            foldMap(ProductInstance.monoidInstance, xs, ::Product).product
 }
