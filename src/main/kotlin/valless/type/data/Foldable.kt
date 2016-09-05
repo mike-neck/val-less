@@ -20,6 +20,7 @@ import valless.type.data.monoid.Dual
 import valless.type.data.monoid.Endo
 import valless.type.data.monoid.Monoid
 import valless.type.data.monoid.narrow
+import valless.util.function.`$`
 import valless.util.function.flip
 import valless.util.function.id
 import valless.util.function.plus
@@ -66,9 +67,31 @@ interface Foldable<F> {
                     .let { foldMap(Dual.monoid(Endo.monoid<R>().narrow), ta, it) }
                     .narrow.dual.appEndo(init)
 
+    /**
+     * <code>Data.Foldable.foldl'</code>
+     * <code>(b -> a -> b) -> b -> t a -> b</code>
+     *
+     * default implementation is
+     * <code><pre>
+     *     foldl' f z0 xs = foldr f' id xs z0
+     *       where f' x k z = k $! f z x
+     * </pre></code>
+     */
+    fun <T, R> foldld(ta: _1<F, T>, init: R, f: (R) -> ((T) -> R)): R =
+            ff<T, R, R>(f) `$` { foldr(ta, init, it.flip()(id())) }
+
+    /**
+     * <code><pre>
+     *     f' :: (a -> b -> a) -> b -> (b -> c) -> b -> c
+     *     f' f k x z = k $! f z x
+     * </pre></code>
+     */
+    private fun <P, Q, R> ff(f: (R) -> ((P) -> R)): (P) -> (((R) -> Q) -> ((R) -> Q)) =
+            { p -> { g -> { r -> f(r)(p) `$` g } } }
+
     fun <T> isNull(ta: _1<F, T>): Bool = foldr(ta, Bool.True) { { Bool.False } }
 
-    fun <T> size(ta: _1<F, T>): Int = foldr(ta, 0) { { it + 1 } }
+    fun <T> size(ta: _1<F, T>): Int = foldld(ta, 0) { c -> { c + 1 } }
 
     fun <T> toDual(): (T) -> Dual<T> = { Dual(it) }
 }
