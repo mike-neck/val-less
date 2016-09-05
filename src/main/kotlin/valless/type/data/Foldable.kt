@@ -108,7 +108,7 @@ interface Foldable<F> {
      * </pre></code>
      */
     fun <T> any(ta: _1<F, T>, pred: (T) -> Bool): Bool =
-            foldMap(OrInstances.monoidInstance, ta, pred + ::Or).any
+            foldMap(OrInstances.monoidInstance, ta, pred + ::Or).or
 
     /**
      * <code>Data.Foldable.all</code>
@@ -120,8 +120,15 @@ interface Foldable<F> {
      * </pre></code>
      */
     fun <T> all(ta: _1<F, T>, pred: (T) -> Bool): Bool =
-            foldMap(AndInstances.monoidInstance, ta, pred + ::And).all
+            foldMap(AndInstances.monoidInstance, ta, pred + ::And).and
 
-    fun and(bs: _1<F, Bool>): Bool = foldMap(AndInstances.monoidInstance, bs, ::And).all
+    /**
+     * <code>Data.Foldable.and</code>
+     */
+    fun and(bs: _1<F, Bool>): Bool = foldMap(AndInstances.monoidInstance, bs, ::And).and
 
+    /**
+     * <code>Data.Foldable.or</code>
+     */
+    fun or(bs: _1<F, Bool>): Bool = foldMap(OrInstances.monoidInstance, bs, ::Or).or
 }

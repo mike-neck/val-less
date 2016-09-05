@@ -24,10 +24,10 @@ import valless.util.flow.If
 /**
  * Haskell's <code>Any</code>
  */
-data class Or(val any: Bool) : Comparable<Or>, _0<OrInstances> {
+data class Or(val or: Bool) : Comparable<Or>, _0<OrInstances> {
     constructor(any: Boolean) : this(Eq.booleanToBool(any))
 
-    override fun compareTo(other: Or): Int = this.any.compareTo(other.any)
+    override fun compareTo(other: Or): Int = this.or.compareTo(other.or)
 }
 
 object OrInstances :
@@ -41,15 +41,15 @@ object OrInstances :
     override val monoidInstance: Monoid<Or> get() = object : Monoid<Or> {
         override fun empty(): Or = Or(Bool.False)
 
-        override fun append(x: Or, y: Or): Or = If(x.any == Bool.False) { y }.els { x }
+        override fun append(x: Or, y: Or): Or = If(x.or == Bool.False) { y }.els { x }
     }
 }
 
-data class And(val all: Bool) : Comparable<And>, _0<AndInstances> {
+data class And(val and: Bool) : Comparable<And>, _0<AndInstances> {
 
     constructor(all: Boolean) : this(Eq.booleanToBool(all))
 
-    override fun compareTo(other: And): Int = this.all.compareTo(other.all)
+    override fun compareTo(other: And): Int = this.and.compareTo(other.and)
 }
 
 /**
@@ -64,7 +64,7 @@ object AndInstances :
         override fun empty(): And = And(Bool.True)
 
         override fun append(x: And, y: And): And =
-                If(y.all == Bool.False) { y }.els { x }
+                If(y.and == Bool.False) { y }.els { x }
 
     }
 
