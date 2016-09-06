@@ -167,4 +167,15 @@ interface Foldable<F> {
      */
     fun <M, T> sequence_(m: Monad<M>, ta: _1<F, _1<M, T>>): _1<M, Unit> =
             foldr(ta, m.pure(Unit), m.disc<T, Unit>())
+
+    /**
+     * <code>Data.Foldable.foldrM</code>
+     *
+     * Monadic fold over the elements of a structure, from right to left.
+     */
+    fun <P, R, M> foldrM(m: Monad<M>, ta: _1<F, P>, init: R, f: (P) -> ((R) -> _1<M, R>)): _1<M, R> =
+            foldl(ta, { m.pure(it) }, ff(m, f))(init)
+
+    fun <P, R, M> ff(m: Monad<M>, f: (P) -> ((R) -> _1<M, R>)): ((R) -> _1<M, R>) -> ((P) -> ((R) -> _1<M, R>)) =
+            { g -> { x -> { z -> m.bind(f(x)(z), g) } } }
 }
