@@ -17,6 +17,7 @@ package valless.type.data
 
 import valless.type._1
 import valless.type.control.applicative.Applicative
+import valless.type.control.monad.Monad
 import valless.type.data.functor.Functor
 import valless.util.function.id
 import valless.util.function.times
@@ -61,4 +62,17 @@ interface Traversable<T> : Functor<T>, Foldable<T> {
      */
     fun <P, R, F> forAp(m: Applicative<F>, ta: _1<T, P>, f: (P) -> _1<F, R>): _1<F, _1<T, R>> =
             traverse<P, R, F>(m) * ta * f
+
+    /**
+     * Mapping each element to monadic action, and collect results.
+     * <code>Data.Traversable.mapM</code>
+     */
+    fun <P, R, M> mapM(m: Monad<M>, ta: _1<T, P>, f: (P) -> _1<M, R>): _1<M, _1<T, R>> =
+            traverse(m, ta, f)
+
+    /**
+     * Evaluate each monadic action, then collect results.
+     * <code>Data.Traversable.sequence</code>
+     */
+    fun <P, M> sequence(m: Monad<M>, ta: _1<T, _1<M, P>>): _1<M, _1<T, P>> = sequenceA(m, ta)
 }

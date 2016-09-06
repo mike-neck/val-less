@@ -17,6 +17,7 @@ package valless.type.data
 
 import valless.type._1
 import valless.type.control.applicative.Applicative
+import valless.type.control.monad.Monad
 import valless.type.data.monoid.*
 import valless.type.data.monoid.Dual.Companion.toDual
 import valless.type.data.monoid.Endo.Companion.toEndo
@@ -152,4 +153,18 @@ interface Foldable<F> {
      */
     fun <M, T, R> traverse_(m: Applicative<M>, ta: _1<F, T>, f: (T) -> _1<M, R>): _1<M, Unit> =
             foldr(ta, m.pure(Unit), f + m.rgt<R, Unit>())
+
+    /**
+     * Mapping each element to monadic action, and ignore results.
+     * <code>Data.Foldable.mapM</code>
+     */
+    fun <P, R, M> mapM_(m: Monad<M>, ta: _1<F, P>, f: (P) -> _1<M, R>): _1<M, Unit> =
+            foldr(ta, m.pure(Unit), f + m.disc<R, Unit>())
+
+    /**
+     * Evaluate each monadic action, and ignore results.
+     * <code>Data.Foldable.sequence_</code>
+     */
+    fun <M, T> sequence_(m: Monad<M>, ta: _1<F, _1<M, T>>): _1<M, Unit> =
+            foldr(ta, m.pure(Unit), m.disc<T, Unit>())
 }
