@@ -21,9 +21,25 @@ import valless.util.function.id
 
 interface Monad<M> : Applicative<M> {
 
+    /**
+     * Sequential action composer.
+     *
+     * <code>Control.Monad.>>=</code>
+     * <code><pre>
+     *     >>= :: (Monad m) => (a -> m b) -> m a -> m b
+     * </pre></code>
+     */
     fun <T, R> bind(obj: _1<M, T>, f: (T) -> _1<M, R>): _1<M, R>
 
+    /**
+     * Conventional [Monad] join operator.
+     *
+     * <code>Control.Monad.join</code>
+     */
     fun <T> join(obj: _1<M, _1<M, T>>): _1<M, T> = bind(obj, id())
 
-    infix fun <T, R> _1<M, T>.andThen(n: _1<M, R>): _1<M, R> = bind(this) { n }
+    /**
+     * Discarding a value produced by the first action.
+     */
+    fun <T, R> discardFirst(fst: _1<M, T>, snd: _1<M, R>): _1<M, R> = bind(fst) { snd }
 }
