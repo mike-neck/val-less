@@ -16,8 +16,10 @@
 package valless.type.data
 
 import valless.type._1
+import valless.type.control.applicative.Alternative
 import valless.type.control.applicative.Applicative
 import valless.type.control.monad.Monad
+import valless.type.control.monad.MonadPlus
 import valless.type.data.monoid.*
 import valless.type.data.monoid.Dual.Companion.toDual
 import valless.type.data.monoid.Endo.Companion.toEndo
@@ -196,4 +198,9 @@ interface Foldable<F> {
      */
     fun <P, M> sequenceA_(a: Applicative<M>, ta: _1<F, _1<M, P>>): _1<M, Unit> =
             foldr(ta, a.pure(Unit), a.rgt())
+
+    fun <P, A> asum(a: Alternative<A>, ta: _1<F, _1<A, P>>): _1<A, P> =
+            foldr(ta, a.empty(), a.`(+)`())
+
+    fun <P, M> msum(m: MonadPlus<M>, ta: _1<F, _1<M, P>>): _1<M, P> = asum(m, ta)
 }

@@ -31,5 +31,5 @@ interface Alternative<F> : Applicative<F> {
      *
      * An associative binary operation.
      */
-    infix fun <T> _1<F, T>.`(+)`(other: _1<F, T>): _1<F, T>
+    fun <T> `(+)`(): (_1<F, T>) -> ((_1<F, T>) -> _1<F, T>)
 }
