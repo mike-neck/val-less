@@ -47,4 +47,28 @@ interface Monad<M> : Applicative<M> {
      * Function version of [discardFirst]
      */
     fun <T, R> disc(): (_1<M, T>) -> ((_1<M, R>) -> _1<M, R>) = { f -> { s -> discardFirst(f, s) } }
+
+    /**
+     * Left to right Kleisli composition.
+     */
+    fun <P, Q, R> lrKComposition(f: (P) -> _1<M, Q>, g: (Q) -> _1<M, R>): (P) -> _1<M, R> =
+            { p -> bind(f(p), g) }
+
+    /**
+     * Function version of [lrKComposition]
+     */
+    fun <P, Q, R> lrKComp(): ((P) -> _1<M, Q>) -> (((Q) -> _1<M, R>) -> ((P) -> _1<M, R>)) =
+            { f -> { g -> lrKComposition(f, g) } }
+
+    /**
+     * Right to left Kleisli composition.
+     */
+    fun <P, Q, R> rlKComposition(f: (Q) -> _1<M, R>, g: (P) -> _1<M, Q>): (P) -> _1<M, R> =
+            { p -> bind(g(p), f) }
+
+    /**
+     * Function version of [rlKComposition]
+     */
+    fun <P, Q, R> rlKComp(): ((Q) -> _1<M, R>) -> (((P) -> _1<M, Q>) -> ((P) -> _1<M, R>)) =
+            { f -> { g -> rlKComposition(f, g) } }
 }
