@@ -188,4 +188,12 @@ interface Foldable<F> {
             { p: P -> { g: Function1<R, _1<M, R>> -> { r: R -> m.bind(f(r)(p), g) } } }
                     .let { foldr(ta, { m.pure(it) }, it) }(init)
 
+    /**
+     * <code>Data.Foldable.sequenceA_</code>
+     *
+     * Evaluate each action in the structure from left to right, ignoring results.
+     * For the versions that doesn't ignore the results see [Traversable.sequenceA].
+     */
+    fun <P, M> sequenceA_(a: Applicative<M>, ta: _1<F, _1<M, P>>): _1<M, Unit> =
+            foldr(ta, a.pure(Unit), a.rgt())
 }
