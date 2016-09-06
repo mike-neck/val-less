@@ -178,4 +178,14 @@ interface Foldable<F> {
 
     fun <P, R, M> ff(m: Monad<M>, f: (P) -> ((R) -> _1<M, R>)): ((R) -> _1<M, R>) -> ((P) -> ((R) -> _1<M, R>)) =
             { g -> { x -> { z -> m.bind(f(x)(z), g) } } }
+
+    /**
+     * <code>Data.Foldable.foldM</code>
+     *
+     * Monadic fold over the elements of a structure from left to right.
+     */
+    fun <P, R, M> foldlM(m: Monad<M>, ta: _1<F, P>, init: R, f: (R) -> ((P) -> _1<M, R>)): _1<M, R> =
+            { p: P -> { g: Function1<R, _1<M, R>> -> { r: R -> m.bind(f(r)(p), g) } } }
+                    .let { foldr(ta, { m.pure(it) }, it) }(init)
+
 }
