@@ -42,4 +42,9 @@ interface Monad<M> : Applicative<M> {
      * Discarding a value produced by the first action.
      */
     fun <T, R> discardFirst(fst: _1<M, T>, snd: _1<M, R>): _1<M, R> = bind(fst) { snd }
+
+    /**
+     * Function version of [discardFirst]
+     */
+    fun <T, R> disc(): (_1<M, T>) -> ((_1<M, R>) -> _1<M, R>) = { f -> { s -> discardFirst(f, s) } }
 }
