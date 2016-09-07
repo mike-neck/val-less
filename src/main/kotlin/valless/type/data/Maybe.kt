@@ -19,6 +19,7 @@ import valless.type._1
 import valless.type.control.applicative.Applicative
 import valless.type.control.monad.Monad
 import valless.type.control.monad.MonadPlus
+import valless.type.data.monoid.Monoid
 import valless.util.function.`$`
 
 sealed class Maybe<T> : _1<Maybe.Companion, T> {
@@ -32,8 +33,25 @@ sealed class Maybe<T> : _1<Maybe.Companion, T> {
             , Foldable._1_<Companion>
             , Traversable._1_<Companion> {
 
-        override val foldable: Foldable<Companion>
-            get() = traversable
+        fun <T> monoid(m: Monoid<T>): Monoid<_1<Companion, T>> = object : Monoid<_1<Companion, T>> {
+
+            override fun empty(): _1<Companion, T> = Nothing()
+
+            override fun append(x: _1<Companion, T>, y: _1<Companion, T>): _1<Companion, T> =
+                    x.narrow `$` { xn ->
+                        when (xn) {
+                            is Nothing -> y
+                            is Just -> y.narrow `$` {
+                                when (it) {
+                                    is Nothing -> xn
+                                    is Just -> m.append(xn.value, it.value) `$` { Just(it) }
+                                }
+                            }
+                        }
+                    }
+        }
+
+        override val foldable: Foldable<Companion> get() = traversable
 
         override val traversable: Traversable<Companion>
             get() = object : Traversable<Companion> {
