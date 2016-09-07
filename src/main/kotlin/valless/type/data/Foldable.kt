@@ -30,6 +30,10 @@ import valless.util.function.plus
 
 interface Foldable<F> {
 
+    interface _1_<F> {
+        val foldable: Foldable<F>
+    }
+
     /**
      * <code>Data.Foldable.foldr</code>
      * <code>(a -> b -> b) -> b -> t a -> b</code>

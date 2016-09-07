@@ -29,7 +29,12 @@ sealed class Maybe<T> : _1<Maybe.Companion, T> {
 
     companion object : MonadPlus._1_<Companion>
             , Monad._1_<Companion>
+            , Foldable._1_<Companion>
             , Traversable._1_<Companion> {
+
+        override val foldable: Foldable<Companion>
+            get() = traversable
+
         override val traversable: Traversable<Companion>
             get() = object : Traversable<Companion> {
 
