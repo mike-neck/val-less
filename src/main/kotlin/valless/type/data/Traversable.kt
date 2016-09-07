@@ -24,6 +24,10 @@ import valless.util.function.times
 
 interface Traversable<T> : Functor<T>, Foldable<T> {
 
+    interface _1_<T> {
+        val traversable: Traversable<T>
+    }
+
     /**
      * <code>Data.Traversable.traverse</code>
      * <code><pre>

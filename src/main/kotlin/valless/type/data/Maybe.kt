@@ -16,6 +16,8 @@
 package valless.type.data
 
 import valless.type._1
+import valless.type.control.applicative.Applicative
+import valless.type.control.monad.Monad
 import valless.type.control.monad.MonadPlus
 import valless.util.function.`$`
 
@@ -25,7 +27,41 @@ sealed class Maybe<T> : _1<Maybe.Companion, T> {
 
     class Just<T>(val value: T) : Maybe<T>()
 
-    companion object : MonadPlus._1_<Companion> {
+    companion object : MonadPlus._1_<Companion>
+            , Monad._1_<Companion>
+            , Traversable._1_<Companion> {
+        override val traversable: Traversable<Companion>
+            get() = object : Traversable<Companion> {
+
+                override fun <P, R, M> traverse(m: Applicative<M>, ta: _1<Companion, P>, f: (P) -> _1<M, R>): _1<M, _1<Companion, R>> =
+                        ta.narrow `$` {
+                            when (it) {
+                                is Nothing -> m.pure(Nothing())
+                                is Just -> m.map(f(it.value)) { Just(it) }
+                            }
+                        }
+
+                override fun <T, R> map(obj: _1<Companion, T>, f: (T) -> R): _1<Companion, R> = monadPlus.map(obj, f)
+
+                override fun <T, R> foldr(ta: _1<Companion, T>, init: R, f: (T) -> (R) -> R): R =
+                        ta.narrow `$` {
+                            when (it) {
+                                is Nothing -> init
+                                is Just -> f(it.value)(init)
+                            }
+                        }
+
+                override fun <T, R> foldl(ta: _1<Companion, T>, init: R, f: (R) -> (T) -> R): R =
+                        ta.narrow `$` {
+                            when (it) {
+                                is Nothing -> init
+                                is Just -> f(init)(it.value)
+                            }
+                        }
+            }
+
+        override val monad: Monad<Companion> get() = monadPlus
+
         override val monadPlus: MonadPlus<Companion>
             get() = object : MonadPlus<Companion> {
                 override fun <T> empty(): _1<Companion, T> = Nothing()
