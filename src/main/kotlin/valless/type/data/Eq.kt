@@ -26,6 +26,10 @@ interface Eq<T> : _1<Eq.Å, T> {
         val eqInstance: Eq<T>
     }
 
+    interface Deriving<D> {
+        fun <T> eq(e: Eq<T>): Eq<_1<D, T>>
+    }
+
     /**
      * Object equality.
      *

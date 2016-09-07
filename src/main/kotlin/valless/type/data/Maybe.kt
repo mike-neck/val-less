@@ -31,7 +31,24 @@ sealed class Maybe<T> : _1<Maybe.Companion, T> {
     companion object : MonadPlus._1_<Companion>
             , Monad._1_<Companion>
             , Foldable._1_<Companion>
+            , Eq.Deriving<Companion>
             , Traversable._1_<Companion> {
+
+        override fun <T> eq(e: Eq<T>): Eq<_1<Companion, T>> = object : Eq<_1<Companion, T>> {
+
+            override fun eq(x: _1<Companion, T>, y: _1<Companion, T>): Bool =
+                    x.narrow `$` { xn ->
+                        when (xn) {
+                            is Nothing -> Eq.booleanToBool(y.narrow is Nothing)
+                            is Just -> y.narrow `$` {
+                                when (it) {
+                                    is Nothing -> Bool.False
+                                    is Just -> e.eq(xn.value, it.value)
+                                }
+                            }
+                        }
+                    }
+        }
 
         fun <T> monoid(m: Monoid<T>): Monoid<_1<Companion, T>> = object : Monoid<_1<Companion, T>> {
 
