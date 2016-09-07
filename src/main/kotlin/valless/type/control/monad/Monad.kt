@@ -21,6 +21,14 @@ import valless.util.function.id
 
 interface Monad<M> : Applicative<M> {
 
+    interface _1_<M> {
+        val monad: Monad<M>
+    }
+
+    interface _2_<M> {
+        fun <T> monad(): _1_<_1<M, T>>
+    }
+
     /**
      * Sequential action composer.
      *

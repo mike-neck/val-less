@@ -20,6 +20,10 @@ import valless.type.control.applicative.Alternative
 
 interface MonadPlus<M> : Monad<M>, Alternative<M> {
 
+    interface _1_<M> {
+        val monadPlus: MonadPlus<M>
+    }
+
     /**
      * The identity.
      */
