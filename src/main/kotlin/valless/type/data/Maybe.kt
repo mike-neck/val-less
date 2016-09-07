@@ -32,8 +32,8 @@ sealed class Maybe<T> : _1<Maybe.Companion, T> {
             , Monad._1_<Companion>
             , Foldable._1_<Companion>
             , Eq.Deriving<Companion>
+            , Ord.Deriving<Companion>
             , Traversable._1_<Companion> {
-
         override fun <T> eq(e: Eq<T>): Eq<_1<Companion, T>> = object : Eq<_1<Companion, T>> {
 
             override fun eq(x: _1<Companion, T>, y: _1<Companion, T>): Bool =
@@ -48,6 +48,16 @@ sealed class Maybe<T> : _1<Maybe.Companion, T> {
                             }
                         }
                     }
+        }
+
+        override fun <T> ord(o: Ord<T>): Ord<_1<Companion, T>> = object : Ord<_1<Companion, T>> {
+
+            override fun compare(x: _1<Companion, T>, y: _1<Companion, T>): Ordering =
+                    comparing(x, y)
+                            .nothing_nothing { Ordering.EQ }
+                            .nothing_just { Ordering.LT }
+                            .just_nothing { Ordering.GT }
+                            .just_just { xn, yn -> o.compare(xn, yn) }
         }
 
         fun <T> monoid(m: Monoid<T>): Monoid<_1<Companion, T>> = object : Monoid<_1<Companion, T>> {
@@ -154,3 +164,44 @@ sealed class Maybe<T> : _1<Maybe.Companion, T> {
 }
 
 val <T> _1<Maybe.Companion, T>.narrow: Maybe<T> get() = this as Maybe<T>
+
+private fun <T> comparing(x: _1<Maybe.Companion, T>, y: _1<Maybe.Companion, T>): WhenBothNothing<T> = object : WhenBothNothing<T> {
+    override fun <R> nothing_nothing(f1: () -> R): WhenLeftNothingRightJust<T, R> = object : WhenLeftNothingRightJust<T, R> {
+        override fun nothing_just(f2: (T) -> R): WhenLeftJustRightNothing<T, R> = object : WhenLeftJustRightNothing<T, R> {
+            override fun just_nothing(f3: (T) -> R): WhenBothJust<T, R> = object : WhenBothJust<T, R> {
+                override fun just_just(f4: (T, T) -> R): R = x.narrow `$` { xn ->
+                    y.narrow `$` { yn ->
+                        when (xn) {
+                            is Maybe.Nothing -> when (yn) {
+                                is Maybe.Nothing -> f1()
+                                is Maybe.Just -> f2(yn.value)
+                            }
+                            is Maybe.Just -> when (yn) {
+                                is Maybe.Nothing -> f3(xn.value)
+                                is Maybe.Just -> f4(xn.value, yn.value)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+private interface WhenBothNothing<out T> {
+    fun <R> nothing_nothing(f1: () -> R): WhenLeftNothingRightJust<T, R>
+}
+
+private interface WhenLeftNothingRightJust<out T, R> {
+    fun nothing_just(f2: (T) -> R): WhenLeftJustRightNothing<T, R>
+}
+
+private interface WhenLeftJustRightNothing<out T, R> {
+    fun just_nothing(f3: (T) -> R): WhenBothJust<T, R>
+}
+
+private interface WhenBothJust<out T, R> {
+    fun just_just(f4: (T, T) -> R): R
+}
+
+

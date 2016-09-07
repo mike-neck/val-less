@@ -27,6 +27,10 @@ interface Ord<T> : _1<Ord.Å, T> {
         val ordInstance: Ord<T>
     }
 
+    interface Deriving<D> {
+        fun <T> ord(o: Ord<T>): Ord<_1<D, T>>
+    }
+
     fun compare(x: T, y: T): Ordering
 
     val asEq: Eq<T> get() = object : Eq<T> {
