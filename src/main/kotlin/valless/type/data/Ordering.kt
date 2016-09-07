@@ -21,7 +21,7 @@ enum class Ordering : _0<Ordering.Companion>, Comparable<Ordering> {
 
         override val enumInstance: Enum<Ordering> = InstanceEnumOrdering
 
-        override val monoidInstance: Monoid<Ordering> get() = object : Monoid<Ordering> {
+        override val monoid: Monoid<Ordering> get() = object : Monoid<Ordering> {
             override fun empty(): Ordering = EQ
 
             override fun append(x: Ordering, y: Ordering): Ordering = If(x == EQ) { y }.els { x }

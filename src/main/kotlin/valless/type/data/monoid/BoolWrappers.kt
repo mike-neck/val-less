@@ -38,7 +38,7 @@ object OrInstances :
 
     override val ordInstance: Ord<Or> get() = Ord.fromComparable<Or>()
 
-    override val monoidInstance: Monoid<Or> get() = object : Monoid<Or> {
+    override val monoid: Monoid<Or> get() = object : Monoid<Or> {
         override fun empty(): Or = Or(Bool.False)
 
         override fun append(x: Or, y: Or): Or = If(x.or == Bool.False) { y }.els { x }
@@ -60,7 +60,7 @@ object AndInstances :
         , Ord._1_<And>
         , Monoid._1_<And> {
 
-    override val monoidInstance: Monoid<And> get() = object : Monoid<And> {
+    override val monoid: Monoid<And> get() = object : Monoid<And> {
         override fun empty(): And = And(Bool.True)
 
         override fun append(x: And, y: And): And =

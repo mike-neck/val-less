@@ -22,8 +22,6 @@ import valless.type.data.Eq
 import valless.type.data.Ord
 import valless.type.data.Ordering
 import valless.util.both
-import valless.util.make
-import kotlin.reflect.KClass
 
 data class Dual<T>(val dual: T) : _1<Dual.Companion, T> {
 
@@ -31,14 +29,14 @@ data class Dual<T>(val dual: T) : _1<Dual.Companion, T> {
 
         fun <T> toDual(): (T) -> Dual<T> = ::Dual
 
-        inline fun <T : _0<O>, reified O> instance(kc: KClass<O> = O::class): Instance<T, O>
-                where O : Eq._1_<T>, O : Ord._1_<T> = kc.objectInstance.make { Instance(it) } ?: throw IllegalStateException("No instance found.")
+//        inline fun <T : _0<O>, reified O> instance(kc: KClass<O> = O::class): Instance<T, O>
+//                where O : Eq._1_<T>, O : Ord._1_<T> = kc.objectInstance.make { Instance(it) } ?: throw IllegalStateException("No instance found.")
 
-        fun <T> monoid(m: Monoid<T>): Monoid<_1<Companion, T>> = monoidInstance(m).monoidInstance
+        fun <T> monoid(m: Monoid<T>): Monoid<_1<Companion, T>> = monoidInstance(m).monoid
 
         fun <T> monoidInstance(m: Monoid<T>): Monoid._1_<_1<Companion, T>> =
                 object : Monoid._1_<_1<Companion, T>> {
-                    override val monoidInstance: Monoid<_1<Companion, T>>
+                    override val monoid: Monoid<_1<Companion, T>>
                         get() = object : Monoid<_1<Companion, T>> {
                             override fun empty(): _1<Companion, T> = Dual(m.mempty)
 

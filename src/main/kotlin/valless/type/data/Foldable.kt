@@ -38,7 +38,7 @@ interface Foldable<F> {
      * <code>foldr f z t = appEndo (foldMap (Endo . f) t) z</code>
      */
     fun <T, R> foldr(ta: _1<F, T>, init: R, f: (T) -> ((R) -> R)): R =
-            foldMap(Endo.monoid<R>(), ta, f + toEndo())
+            foldMap(Endo.monoid<R>().monoid, ta, f + toEndo())
                     .narrow.appEndo(init)
 
     /**
@@ -65,7 +65,7 @@ interface Foldable<F> {
      */
     fun <T, R> foldl(ta: _1<F, T>, init: R, f: (R) -> ((T) -> R)): R =
             (f.flip() + toEndo() + toDual())
-                    .let { foldMap(Dual.monoid(Endo.monoid<R>().narrow), ta, it) }
+                    .let { foldMap(Dual.monoid(Endo.monoid<R>().monoid.narrow), ta, it) }
                     .narrow.dual.appEndo(init)
 
     /**
@@ -110,7 +110,7 @@ interface Foldable<F> {
      * </pre></code>
      */
     fun <T> any(ta: _1<F, T>, pred: (T) -> Bool): Bool =
-            foldMap(OrInstances.monoidInstance, ta, pred + ::Or).or
+            foldMap(OrInstances.monoid, ta, pred + ::Or).or
 
     /**
      * <code>Data.Foldable.all</code>
@@ -122,17 +122,17 @@ interface Foldable<F> {
      * </pre></code>
      */
     fun <T> all(ta: _1<F, T>, pred: (T) -> Bool): Bool =
-            foldMap(AndInstances.monoidInstance, ta, pred + ::And).and
+            foldMap(AndInstances.monoid, ta, pred + ::And).and
 
     /**
      * <code>Data.Foldable.and</code>
      */
-    fun and(bs: _1<F, Bool>): Bool = foldMap(AndInstances.monoidInstance, bs, ::And).and
+    fun and(bs: _1<F, Bool>): Bool = foldMap(AndInstances.monoid, bs, ::And).and
 
     /**
      * <code>Data.Foldable.or</code>
      */
-    fun or(bs: _1<F, Bool>): Bool = foldMap(OrInstances.monoidInstance, bs, ::Or).or
+    fun or(bs: _1<F, Bool>): Bool = foldMap(OrInstances.monoid, bs, ::Or).or
 
     /**
      * <code>Data.Foldable.elem</code>
@@ -142,13 +142,13 @@ interface Foldable<F> {
     /**
      * <code>Data.Foldable.sum</code>
      */
-    fun sum(xs: _1<F, Int>): Int = foldMap(SumInstances.monoidInstance, xs, ::Sum).sum
+    fun sum(xs: _1<F, Int>): Int = foldMap(SumInstances.monoid, xs, ::Sum).sum
 
     /**
      * <code>Data.Foldable.product</code>
      */
     fun product(xs: _1<F, Long>): Long =
-            foldMap(ProductInstance.monoidInstance, xs, ::Product).product
+            foldMap(ProductInstance.monoid, xs, ::Product).product
 
     /**
      * <code>Data.Foldable.traverse_</code>

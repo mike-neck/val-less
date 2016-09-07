@@ -25,13 +25,11 @@ class Endo<T>(val appEndo: (T) -> T) : _1<Endo.Companion, T> {
 
         fun <T> toEndo(): ((T) -> T) -> Endo<T> = ::Endo
 
-        fun <T> monoid(): Monoid<_1<Companion, T>> = monoidInstance<T>().monoidInstance
-
         val <T> _1<Companion, T>.`%`: Endo<T> get() = this as Endo<T>
 
-        override fun <T> monoidInstance(): Monoid._1_<_1<Companion, T>> =
+        override fun <T> monoid(): Monoid._1_<_1<Companion, T>> =
                 object : Monoid._1_<_1<Companion, T>> {
-                    override val monoidInstance: Monoid<_1<Companion, T>>
+                    override val monoid: Monoid<_1<Companion, T>>
                         get() = object : Monoid<_1<Companion, T>> {
                             override fun empty(): _1<Companion, T> = Endo(id())
 
