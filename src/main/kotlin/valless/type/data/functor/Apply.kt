@@ -39,19 +39,19 @@ interface Apply<F> : Functor<F> {
      */
     fun <T, R> takeLeft(self: _1<F, T>, other: _1<F, R>): _1<F, T> = (self `$$` const<T, R>()) `(_)` other
 
-    fun <T, R> lft(): (_1<F, T>) -> ((_1<F, R>) -> _1<F, T>) = { s -> { o -> takeLeft(s, o) } }
+    fun <T, R> lft(): (_1<F, T>) -> (_1<F, R>) -> _1<F, T> = { s -> { o -> takeLeft(s, o) } }
 
     /**
      * Haskell's *&gt;
      */
     fun <T, R> takeRight(self: _1<F, T>, other: _1<F, R>): _1<F, R> = (self `$$` const<R, T>().flip()) `(_)` other
 
-    fun <T, R> rgt(): (_1<F, T>) -> ((_1<F, R>) -> _1<F, R>) = { s -> { o -> takeRight(s, o) } }
+    fun <T, R> rgt(): (_1<F, T>) -> (_1<F, R>) -> _1<F, R> = { s -> { o -> takeRight(s, o) } }
 
-    val <P, Q, R, G : (P) -> ((Q) -> R)> G.liftF2: (_1<F, P>) -> ((_1<F, Q>) -> _1<F, R>)
+    val <P, Q, R, G : (P) -> ((Q) -> R)> G.liftF2: (_1<F, P>) -> (_1<F, Q>) -> _1<F, R>
         get() = { p -> { q -> (p `$$` this) `(_)` q } }
 
-    val <P, Q, T, R, G : (P) -> ((Q) -> ((T) -> R))> G.liftF3:
-            (_1<F, P>) -> ((_1<F, Q>) -> ((_1<F, T>) -> _1<F, R>))
-        get() = { p -> { q -> { t -> (p `$$` this) `(_)` q `(_)` t } } }
+    fun <P, Q, T, R, G : (P) -> (Q) -> (T) -> R> liftF3(g: G):
+            (_1<F, P>) -> (_1<F, Q>) -> (_1<F, T>) -> _1<F, R> =
+            { p -> { q -> { t -> (p `$$` g) `(_)` q `(_)` t } } }
 }

@@ -65,7 +65,7 @@ interface Monad<M> : Applicative<M> {
     /**
      * Function version of [lrKComposition]
      */
-    fun <P, Q, R> lrKComp(): ((P) -> _1<M, Q>) -> (((Q) -> _1<M, R>) -> ((P) -> _1<M, R>)) =
+    fun <P, Q, R> lrKComp(): ((P) -> _1<M, Q>) -> ((Q) -> _1<M, R>) -> ((P) -> _1<M, R>) =
             { f -> { g -> lrKComposition(f, g) } }
 
     /**
@@ -77,6 +77,6 @@ interface Monad<M> : Applicative<M> {
     /**
      * Function version of [rlKComposition]
      */
-    fun <P, Q, R> rlKComp(): ((Q) -> _1<M, R>) -> (((P) -> _1<M, Q>) -> ((P) -> _1<M, R>)) =
+    fun <P, Q, R> rlKComp(): ((Q) -> _1<M, R>) -> ((P) -> _1<M, Q>) -> ((P) -> _1<M, R>) =
             { f -> { g -> rlKComposition(f, g) } }
 }

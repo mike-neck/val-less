@@ -33,7 +33,7 @@ interface Monoid<T> {
 
     fun append(x: T, y: T): T
 
-    val mappend: (T) -> ((T) -> T) get() = { x -> { y -> append(x, y) } }
+    val mappend: (T) -> (T) -> T get() = { x -> { y -> append(x, y) } }
 
     interface Builder<T> {
         fun append(appender: (T, T) -> T): Monoid<T>
