@@ -17,6 +17,7 @@ package valless.type.data.monoid
 
 import valless.type._1
 import valless.type.control.applicative.Applicative
+import valless.type.control.monad.Monad
 import valless.type.data.*
 import valless.type.data.functor.Functor
 import valless.util.both
@@ -31,7 +32,8 @@ data class Dual<T>(val dual: T) : _1<Dual.Companion, T> {
             , Monoid.Deriving<Companion>
             , Functor._1_<Companion>
             , Foldable._1_<Companion>
-            , Traversable._1_<Companion> {
+            , Traversable._1_<Companion>
+            , Monad._1_<Companion> {
         override fun <T> eq(e: Eq<T>): Eq<_1<Companion, T>> = object : Eq<_1<Companion, T>> {
             override fun eq(x: _1<Companion, T>, y: _1<Companion, T>): Bool =
                     (x.narrow to y.narrow).both { it.dual } `$` { e.eq(it.first, it.second) }
@@ -82,6 +84,18 @@ data class Dual<T>(val dual: T) : _1<Dual.Companion, T> {
                     (x.narrow to y.narrow).both { it.dual }
                             .let { m.append(it.first, it.second) }
                             .let { Dual(it) }
+        }
+
+        override val monad: Monad<Companion> get() = object : Monad<Companion> {
+            override fun <T> pure(value: T): _1<Companion, T> = Dual(value)
+
+            override fun <T, R> map(obj: _1<Companion, T>, f: (T) -> R): _1<Companion, R> = functor.map(obj, f)
+
+            override fun <T, R, G : (T) -> R> _1<Companion, G>.`(_)`(obj: _1<Companion, T>): _1<Companion, R> =
+                    obj.narrow.dual `$` this.narrow.dual `$` toDual()
+
+            override fun <T, R> bind(obj: _1<Companion, T>, f: (T) -> _1<Companion, R>): _1<Companion, R> =
+                    obj.narrow.dual `$` f
         }
     }
 }
