@@ -15,7 +15,7 @@ enum class Ordering : _0<Ordering.Companion>, Comparable<Ordering> {
             , Ord._1_<Ordering>
             , Enum._1_<Ordering>
             , Monoid._1_<Ordering> {
-        override val eqInstance: Eq<Ordering> = Ord.fromComparable<Ordering>().asEq
+        override val eq: Eq<Ordering> = Ord.fromComparable<Ordering>().asEq
 
         override val ordInstance: Ord<Ordering> = Ord.fromComparable()
 

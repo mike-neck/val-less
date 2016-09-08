@@ -34,7 +34,7 @@ object OrInstances :
         Eq._1_<Or>
         , Ord._1_<Or>
         , Monoid._1_<Or> {
-    override val eqInstance: Eq<Or> get() = Eq.fromEquals()
+    override val eq: Eq<Or> get() = Eq.fromEquals()
 
     override val ordInstance: Ord<Or> get() = Ord.fromComparable<Or>()
 
@@ -68,7 +68,7 @@ object AndInstances :
 
     }
 
-    override val eqInstance: Eq<And> get() = Eq.fromEquals()
+    override val eq: Eq<And> get() = Eq.fromEquals()
 
     override val ordInstance: Ord<And> get() = Ord.fromComparable()
 }

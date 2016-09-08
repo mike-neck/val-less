@@ -32,7 +32,7 @@ enum class Bool(val raw: Boolean) : _0<Bool.Companion> {
 
     companion object : Eq._1_<Bool>, Ord._1_<Bool>, Enum._1_<Bool> {
 
-        override val eqInstance: Eq<Bool> = fromEquals()
+        override val eq: Eq<Bool> = fromEquals()
 
         override val ordInstance: Ord<Bool> = object : Ord<Bool> {
             override fun compare(x: Bool, y: Bool): Ordering =
@@ -41,7 +41,7 @@ enum class Bool(val raw: Boolean) : _0<Bool.Companion> {
                             .elIf(x == False && y == True) { Ordering.LT }
                             .els { Ordering.EQ }
 
-            override val asEq: Eq<Bool> get() = eqInstance
+            override val asEq: Eq<Bool> get() = eq
         }
 
         override val enumInstance: Enum<Bool> = object : Enum<Bool> {

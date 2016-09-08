@@ -29,7 +29,7 @@ data class Sum(val sum: Int) : _0<SumInstances>, Comparable<Sum> {
 object SumInstances : Monoid._1_<Sum>
         , Eq._1_<Sum>
         , Ord._1_<Sum> {
-    override val eqInstance: Eq<Sum> get() = Eq.fromEquals()
+    override val eq: Eq<Sum> get() = Eq.fromEquals()
 
     override val ordInstance: Ord<Sum> get() = Ord.fromComparable()
 
@@ -49,7 +49,7 @@ object ProductInstance :
         , Ord._1_<Product>
         , Monoid._1_<Product> {
 
-    override val eqInstance: Eq<Product> get() = Eq.fromEquals()
+    override val eq: Eq<Product> get() = Eq.fromEquals()
 
     override val ordInstance: Ord<Product> get() = Ord.fromComparable()
 
