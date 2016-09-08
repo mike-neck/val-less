@@ -25,30 +25,24 @@ import valless.util.both
 
 data class Dual<T>(val dual: T) : _1<Dual.Companion, T> {
 
-    companion object {
+    companion object : Monoid.Deriving<Companion> {
 
         fun <T> toDual(): (T) -> Dual<T> = ::Dual
 
 //        inline fun <T : _0<O>, reified O> instance(kc: KClass<O> = O::class): Instance<T, O>
 //                where O : Eq._1_<T>, O : Ord._1_<T> = kc.objectInstance.make { Instance(it) } ?: throw IllegalStateException("No instance found.")
 
-        fun <T> monoid(m: Monoid<T>): Monoid<_1<Companion, T>> = monoidInstance(m).monoid
+        override fun <T> monoid(m: Monoid<T>): Monoid<_1<Companion, T>> = object : Monoid<_1<Companion, T>> {
+            override fun empty(): _1<Companion, T> = Dual(m.mempty)
 
-        fun <T> monoidInstance(m: Monoid<T>): Monoid._1_<_1<Companion, T>> =
-                object : Monoid._1_<_1<Companion, T>> {
-                    override val monoid: Monoid<_1<Companion, T>>
-                        get() = object : Monoid<_1<Companion, T>> {
-                            override fun empty(): _1<Companion, T> = Dual(m.mempty)
-
-                            override fun append(
-                                    x: _1<Companion, T>,
-                                    y: _1<Companion, T>
-                            ): _1<Companion, T> =
-                                    (x.narrow to y.narrow).both { it.dual }
-                                            .let { m.append(it.first, it.second) }
-                                            .let { Dual(it) }
-                        }
-                }
+            override fun append(
+                    x: _1<Companion, T>,
+                    y: _1<Companion, T>
+            ): _1<Companion, T> =
+                    (x.narrow to y.narrow).both { it.dual }
+                            .let { m.append(it.first, it.second) }
+                            .let { Dual(it) }
+        }
     }
 
     class Instance<T : _0<O>, O>(val obj: O) :

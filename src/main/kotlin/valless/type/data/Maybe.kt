@@ -33,6 +33,7 @@ sealed class Maybe<T> : _1<Maybe.Companion, T> {
             , Foldable._1_<Companion>
             , Eq.Deriving<Companion>
             , Ord.Deriving<Companion>
+            , Monoid.Deriving<Companion>
             , Traversable._1_<Companion> {
         override fun <T> eq(e: Eq<T>): Eq<_1<Companion, T>> = object : Eq<_1<Companion, T>> {
 
@@ -54,7 +55,7 @@ sealed class Maybe<T> : _1<Maybe.Companion, T> {
                             .just_just { xn, yn -> o.compare(xn, yn) }
         }
 
-        fun <T> monoid(m: Monoid<T>): Monoid<_1<Companion, T>> = object : Monoid<_1<Companion, T>> {
+        override fun <T> monoid(m: Monoid<T>): Monoid<_1<Companion, T>> = object : Monoid<_1<Companion, T>> {
 
             override fun empty(): _1<Companion, T> = Nothing()
 

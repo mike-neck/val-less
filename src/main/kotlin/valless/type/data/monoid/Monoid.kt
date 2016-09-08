@@ -27,6 +27,10 @@ interface Monoid<T> {
         fun <T> monoid(): _1_<_1<M, T>>
     }
 
+    interface Deriving<M> {
+        fun <T> monoid(m: Monoid<T>): Monoid<_1<M, T>>
+    }
+
     fun empty(): T
 
     val mempty: T get() = empty()
