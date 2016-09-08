@@ -30,7 +30,7 @@ interface Monad<M> : Applicative<M> {
     }
 
     interface _2_<M> {
-        fun <T> monad(): _1_<_1<M, T>>
+        fun <T> monad(): Monad<_1<M, T>>
     }
 
     /**
