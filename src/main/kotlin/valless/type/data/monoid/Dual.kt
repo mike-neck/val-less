@@ -67,9 +67,9 @@ data class Dual<T>(val dual: T) : _1<Dual.Companion, T> {
 
             override fun <T> elem(e: Eq<T>, sbj: T, xs: _1<Companion, T>): Bool = e.eq(sbj, xs.narrow.dual)
 
-            override fun sum(xs: _1<Companion, Int>): Int = xs.narrow.dual
+            override fun <T> sum(n: Num<T>, xs: _1<Companion, T>): T = xs.narrow.dual
 
-            override fun product(xs: _1<Companion, Long>): Long = xs.narrow.dual
+            override fun <T> product(n: Num<T>, xs: _1<Companion, T>): T = xs.narrow.dual
         }
 
         fun <T> toDual(): (T) -> Dual<T> = ::Dual
