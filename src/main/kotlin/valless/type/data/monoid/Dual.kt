@@ -22,10 +22,24 @@ import valless.type.data.Eq
 import valless.type.data.Ord
 import valless.type.data.Ordering
 import valless.util.both
+import valless.util.function.`$`
 
 data class Dual<T>(val dual: T) : _1<Dual.Companion, T> {
 
-    companion object : Monoid.Deriving<Companion> {
+    companion object :
+            Eq.Deriving<Companion>
+            , Ord.Deriving<Companion>
+            , Monoid.Deriving<Companion> {
+
+        override fun <T> eq(e: Eq<T>): Eq<_1<Companion, T>> = object : Eq<_1<Companion, T>> {
+            override fun eq(x: _1<Companion, T>, y: _1<Companion, T>): Bool =
+                    (x.narrow to y.narrow).both { it.dual } `$` { e.eq(it.first, it.second) }
+        }
+
+        override fun <T> ord(o: Ord<T>): Ord<_1<Companion, T>> = object : Ord<_1<Companion, T>> {
+            override fun compare(x: _1<Companion, T>, y: _1<Companion, T>): Ordering =
+                    (x.narrow to y.narrow).both { it.dual } `$` { o.compare(it.first, it.second) }
+        }
 
         fun <T> toDual(): (T) -> Dual<T> = ::Dual
 
