@@ -28,6 +28,9 @@ import valless.util.function.flip
 import valless.util.function.id
 import valless.util.function.plus
 
+/**
+ * Minimum Definition is [foldr] or [foldMap]
+ */
 interface Foldable<F> {
 
     interface _1_<F> {

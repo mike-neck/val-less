@@ -19,10 +19,17 @@ import valless.type._1
 import valless.type.data.tuple.`()`
 
 interface Functor<F> : Invariant<F> {
+
+    interface _1_<F> {
+        val functor: Functor<F>
+    }
+
     /**
      * fmap
      */
     fun <T, R> map(obj: _1<F, T>, f: (T) -> R): _1<F, R>
+
+    fun <T, R> map(f: (T) -> R): (_1<F, T>) -> _1<F, R> = { map(it, f) }
 
     /**
      * <code>Data.Functor.&lt;$&gt;</code>

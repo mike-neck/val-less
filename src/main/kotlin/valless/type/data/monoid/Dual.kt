@@ -15,22 +15,23 @@
  */
 package valless.type.data.monoid
 
-import valless.type._0
 import valless.type._1
-import valless.type.data.Bool
-import valless.type.data.Eq
-import valless.type.data.Ord
-import valless.type.data.Ordering
+import valless.type.control.applicative.Applicative
+import valless.type.data.*
+import valless.type.data.functor.Functor
 import valless.util.both
 import valless.util.function.`$`
+import valless.util.function.times
 
 data class Dual<T>(val dual: T) : _1<Dual.Companion, T> {
 
     companion object :
             Eq.Deriving<Companion>
             , Ord.Deriving<Companion>
-            , Monoid.Deriving<Companion> {
-
+            , Monoid.Deriving<Companion>
+            , Functor._1_<Companion>
+            , Foldable._1_<Companion>
+            , Traversable._1_<Companion> {
         override fun <T> eq(e: Eq<T>): Eq<_1<Companion, T>> = object : Eq<_1<Companion, T>> {
             override fun eq(x: _1<Companion, T>, y: _1<Companion, T>): Bool =
                     (x.narrow to y.narrow).both { it.dual } `$` { e.eq(it.first, it.second) }
@@ -41,10 +42,35 @@ data class Dual<T>(val dual: T) : _1<Dual.Companion, T> {
                     (x.narrow to y.narrow).both { it.dual } `$` { o.compare(it.first, it.second) }
         }
 
-        fun <T> toDual(): (T) -> Dual<T> = ::Dual
+        override val functor: Functor<Companion> get() = object : Functor<Companion> {
+            override fun <T, R> map(obj: _1<Companion, T>, f: (T) -> R): _1<Companion, R> =
+                    obj.narrow.dual `$` f `$` toDual()
+        }
 
-//        inline fun <T : _0<O>, reified O> instance(kc: KClass<O> = O::class): Instance<T, O>
-//                where O : Eq._1_<T>, O : Ord._1_<T> = kc.objectInstance.make { Instance(it) } ?: throw IllegalStateException("No instance found.")
+        override val foldable: Foldable<Companion> get() = traversable
+
+        override val traversable: Traversable<Companion> get() = object : Traversable<Companion> {
+            override fun <T, R> map(obj: _1<Companion, T>, f: (T) -> R): _1<Companion, R> = functor.map(obj, f)
+
+            override fun <P, R, F> traverse(m: Applicative<F>, ta: _1<Companion, P>, f: (P) -> _1<F, R>): _1<F, _1<Companion, R>> =
+                    ta.narrow.dual `$` f `$` m.map { Dual(it) }
+
+            override fun <T, R> foldr(ta: _1<Companion, T>, init: R, f: (T) -> (R) -> R): R = (ta.narrow.dual `$` f) * init
+
+            override fun <T, R> foldl(ta: _1<Companion, T>, init: R, f: (R) -> (T) -> R): R = ta.narrow.dual `$` f(init)
+
+            override fun <T, R> foldMap(m: Monoid<R>, ta: _1<Companion, T>, f: (T) -> R): R = ta.narrow.dual `$` f
+
+            override fun <T> fold(m: Monoid<T>, tm: _1<Companion, T>): T = tm.narrow.dual
+
+            override fun <T> elem(e: Eq<T>, sbj: T, xs: _1<Companion, T>): Bool = e.eq(sbj, xs.narrow.dual)
+
+            override fun sum(xs: _1<Companion, Int>): Int = xs.narrow.dual
+
+            override fun product(xs: _1<Companion, Long>): Long = xs.narrow.dual
+        }
+
+        fun <T> toDual(): (T) -> Dual<T> = ::Dual
 
         override fun <T> monoid(m: Monoid<T>): Monoid<_1<Companion, T>> = object : Monoid<_1<Companion, T>> {
             override fun empty(): _1<Companion, T> = Dual(m.mempty)
@@ -56,21 +82,6 @@ data class Dual<T>(val dual: T) : _1<Dual.Companion, T> {
                     (x.narrow to y.narrow).both { it.dual }
                             .let { m.append(it.first, it.second) }
                             .let { Dual(it) }
-        }
-    }
-
-    class Instance<T : _0<O>, O>(val obj: O) :
-            Eq._1_<Dual<T>>
-            , Ord._1_<Dual<T>>
-    where O : Eq._1_<T>
-    , O : Ord._1_<T> {
-
-        override val eqInstance: Eq<Dual<T>> get() = object : Eq<Dual<T>> {
-            override fun eq(x: Dual<T>, y: Dual<T>): Bool = obj.eqInstance.eq(x.dual, y.dual)
-        }
-
-        override val ordInstance: Ord<Dual<T>> get() = object : Ord<Dual<T>> {
-            override fun compare(x: Dual<T>, y: Dual<T>): Ordering = obj.ordInstance.compare(x.dual, y.dual)
         }
     }
 }

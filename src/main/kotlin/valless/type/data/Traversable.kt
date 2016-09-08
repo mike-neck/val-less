@@ -22,6 +22,9 @@ import valless.type.data.functor.Functor
 import valless.util.function.id
 import valless.util.function.times
 
+/**
+ * Minimal Definition is [traverse] or [sequenceA]
+ */
 interface Traversable<T> : Functor<T>, Foldable<T> {
 
     interface _1_<T> {
