@@ -72,30 +72,21 @@ sealed class Maybe<T> : _1<Maybe.Companion, T> {
             get() = object : Traversable<Companion> {
 
                 override fun <P, R, M> traverse(m: Applicative<M>, ta: _1<Companion, P>, f: (P) -> _1<M, R>): _1<M, _1<Companion, R>> =
-                        ta.narrow `$` {
-                            when (it) {
-                                is Nothing -> m.pure(Nothing())
-                                is Just -> m.map(f(it.value)) { Just(it) }
-                            }
-                        }
+                        inspect<P, _1<M, _1<Companion, R>>>(ta)
+                                .nothing { m.pure(Nothing()) }
+                                .just { m.map(f(it)) { Just(it) } }
 
                 override fun <T, R> map(obj: _1<Companion, T>, f: (T) -> R): _1<Companion, R> = monadPlus.map(obj, f)
 
                 override fun <T, R> foldr(ta: _1<Companion, T>, init: R, f: (T) -> (R) -> R): R =
-                        ta.narrow `$` {
-                            when (it) {
-                                is Nothing -> init
-                                is Just -> f(it.value)(init)
-                            }
-                        }
+                        inspect<T, R>(ta)
+                                .nothing { init }
+                                .just { f(it)(init) }
 
                 override fun <T, R> foldl(ta: _1<Companion, T>, init: R, f: (R) -> (T) -> R): R =
-                        ta.narrow `$` {
-                            when (it) {
-                                is Nothing -> init
-                                is Just -> f(init)(it.value)
-                            }
-                        }
+                        inspect<T, R>(ta)
+                                .nothing { init }
+                                .just { f(init)(it) }
             }
 
         override val monad: Monad<Companion> get() = monadPlus
@@ -107,51 +98,57 @@ sealed class Maybe<T> : _1<Maybe.Companion, T> {
                 override fun <T> mzero(): _1<Companion, T> = empty()
 
                 override fun <T> mplus(x: _1<Companion, T>, y: _1<Companion, T>): _1<Companion, T> =
-                        x.narrow `$` {
-                            when (it) {
-                                is Just -> it
-                                is Nothing -> y
-                            }
-                        }
+                        inspect<T, _1<Companion, T>>(x)
+                                .nothing { y }
+                                .just { x }
 
                 override fun <T> `(+)`(): (_1<Companion, T>) -> (_1<Companion, T>) -> _1<Companion, T> =
                         { x -> { y -> mplus(x, y) } }
 
                 override fun <T, R> map(obj: _1<Companion, T>, f: (T) -> R): _1<Companion, R> =
-                        obj.narrow `$` {
-                            when (it) {
-                                is Nothing -> Nothing()
-                                is Just -> Just(f(it.value))
-                            }
-                        }
+                        inspect<T, _1<Companion, R>>(obj)
+                                .nothing { Nothing() }
+                                .just { Just(f(it)) }
 
                 override fun <T> pure(value: T): _1<Companion, T> = Just(value)
 
                 override fun <T, R, G : (T) -> R> _1<Companion, G>.`(_)`(obj: _1<Companion, T>): _1<Companion, R> =
-                        obj.narrow `$` { o ->
-                            when (o) {
-                                is Nothing -> Nothing()
-                                is Just -> this.narrow `$` {
-                                    when (it) {
-                                        is Nothing -> Nothing<R>()
-                                        is Just -> Just(it.value(o.value))
-                                    }
+                        inspect<T, _1<Companion, R>>(obj)
+                                .nothing { Nothing() }
+                                .just { o ->
+                                    inspect<G, _1<Companion, R>>(this)
+                                            .nothing { Nothing() }
+                                            .just { Just(it(o)) }
                                 }
-                            }
-                        }
 
                 override fun <T, R> bind(obj: _1<Companion, T>, f: (T) -> _1<Companion, R>): _1<Companion, R> =
-                        obj.narrow `$` {
-                            when (it) {
-                                is Nothing -> Nothing()
-                                is Just -> f(it.value)
-                            }
-                        }
+                        inspect<T, _1<Companion, R>>(obj)
+                                .nothing { Nothing() }
+                                .just { f(it).narrow }
             }
     }
 }
 
 val <T> _1<Maybe.Companion, T>.narrow: Maybe<T> get() = this as Maybe<T>
+
+private fun <T, R> inspect(x: _1<Maybe.Companion, T>): WhenNothing<T, R> = object : WhenNothing<T, R> {
+    override fun nothing(nf: () -> R): WhenJust<T, R> = object : WhenJust<T, R> {
+        override fun just(jf: (T) -> R): R = x.narrow `$` {
+            when (it) {
+                is Maybe.Nothing -> nf()
+                is Maybe.Just -> jf(it.value)
+            }
+        }
+    }
+}
+
+private interface WhenNothing<out T, R> {
+    fun nothing(nf: () -> R): WhenJust<T, R>
+}
+
+private interface WhenJust<out T, R> {
+    fun just(jf: (T) -> R): R
+}
 
 private fun <T> comparing(x: _1<Maybe.Companion, T>, y: _1<Maybe.Companion, T>): WhenBothNothing<T> = object : WhenBothNothing<T> {
     override fun <R> nothing(fn: () -> R): WhenLeftJustRightNothing<T, R> =
