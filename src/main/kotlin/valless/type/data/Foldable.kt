@@ -213,7 +213,7 @@ interface Foldable<F> {
             foldr(ta, a.pure(Unit), a.rgt())
 
     fun <P, A> asum(a: Alternative<A>, ta: _1<F, _1<A, P>>): _1<A, P> =
-            foldr(ta, a.empty(), a.`(+)`())
+            foldr(ta, a.empty(), a.`_+_`())
 
     fun <P, M> msum(m: MonadPlus<M>, ta: _1<F, _1<M, P>>): _1<M, P> = asum(m, ta)
 }

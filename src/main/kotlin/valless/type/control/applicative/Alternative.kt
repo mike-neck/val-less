@@ -37,5 +37,5 @@ interface Alternative<F> : Applicative<F> {
      * An associative binary operation.
      */
     @MinimumDefinition(Implementation.MUST)
-    fun <T> `(+)`(): (_1<F, T>) -> (_1<F, T>) -> _1<F, T>
+    fun <T> `_+_`(): (_1<F, T>) -> (_1<F, T>) -> _1<F, T>
 }

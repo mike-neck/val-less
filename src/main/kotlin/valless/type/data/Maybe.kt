@@ -103,7 +103,7 @@ sealed class Maybe<T> : _1<Maybe.Companion, T> {
                                 .nothing { y }
                                 .just { x }
 
-                override fun <T> `(+)`(): (_1<Companion, T>) -> (_1<Companion, T>) -> _1<Companion, T> =
+                override fun <T> `_+_`(): (_1<Companion, T>) -> (_1<Companion, T>) -> _1<Companion, T> =
                         { x -> { y -> mplus(x, y) } }
 
                 override fun <T, R> map(obj: _1<Companion, T>, f: (T) -> R): _1<Companion, R> =
