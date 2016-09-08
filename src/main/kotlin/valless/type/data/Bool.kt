@@ -34,7 +34,7 @@ enum class Bool(val raw: Boolean) : _0<Bool.Companion> {
 
         override val eq: Eq<Bool> = fromEquals()
 
-        override val ordInstance: Ord<Bool> = object : Ord<Bool> {
+        override val ord: Ord<Bool> = object : Ord<Bool> {
             override fun compare(x: Bool, y: Bool): Ordering =
                     If(x == True && y == True) { Ordering.EQ }
                             .elIf(x == True && y == False) { Ordering.GT }

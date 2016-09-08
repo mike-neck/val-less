@@ -36,7 +36,7 @@ object OrInstances :
         , Monoid._1_<Or> {
     override val eq: Eq<Or> get() = Eq.fromEquals()
 
-    override val ordInstance: Ord<Or> get() = Ord.fromComparable<Or>()
+    override val ord: Ord<Or> get() = Ord.fromComparable<Or>()
 
     override val monoid: Monoid<Or> get() = object : Monoid<Or> {
         override fun empty(): Or = Or(Bool.False)
@@ -70,5 +70,5 @@ object AndInstances :
 
     override val eq: Eq<And> get() = Eq.fromEquals()
 
-    override val ordInstance: Ord<And> get() = Ord.fromComparable()
+    override val ord: Ord<And> get() = Ord.fromComparable()
 }

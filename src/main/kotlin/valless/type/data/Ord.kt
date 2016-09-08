@@ -28,7 +28,7 @@ interface Ord<T> : _1<Ord.Å, T> {
     object Å
 
     interface _1_<T> {
-        val ordInstance: Ord<T>
+        val ord: Ord<T>
     }
 
     interface Deriving<D> {
