@@ -37,17 +37,11 @@ sealed class Maybe<T> : _1<Maybe.Companion, T> {
         override fun <T> eq(e: Eq<T>): Eq<_1<Companion, T>> = object : Eq<_1<Companion, T>> {
 
             override fun eq(x: _1<Companion, T>, y: _1<Companion, T>): Bool =
-                    x.narrow `$` { xn ->
-                        when (xn) {
-                            is Nothing -> Eq.booleanToBool(y.narrow is Nothing)
-                            is Just -> y.narrow `$` {
-                                when (it) {
-                                    is Nothing -> Bool.False
-                                    is Just -> e.eq(xn.value, it.value)
-                                }
-                            }
-                        }
-                    }
+                    comparing(x, y)
+                            .nothing_nothing { Bool.True }
+                            .nothing_just { Bool.False }
+                            .just_nothing { Bool.False }
+                            .just_just { xn, yn -> e.eq(xn, yn) }
         }
 
         override fun <T> ord(o: Ord<T>): Ord<_1<Companion, T>> = object : Ord<_1<Companion, T>> {
@@ -65,17 +59,11 @@ sealed class Maybe<T> : _1<Maybe.Companion, T> {
             override fun empty(): _1<Companion, T> = Nothing()
 
             override fun append(x: _1<Companion, T>, y: _1<Companion, T>): _1<Companion, T> =
-                    x.narrow `$` { xn ->
-                        when (xn) {
-                            is Nothing -> y
-                            is Just -> y.narrow `$` {
-                                when (it) {
-                                    is Nothing -> xn
-                                    is Just -> m.append(xn.value, it.value) `$` { Just(it) }
-                                }
-                            }
-                        }
-                    }
+                    comparing(x, y)
+                            .nothing_nothing { y }
+                            .nothing_just { y }
+                            .just_nothing { x }
+                            .just_just { xn, yn -> m.append(xn, yn) `$` { Just(it) } }
         }
 
         override val foldable: Foldable<Companion> get() = traversable
@@ -166,6 +154,10 @@ sealed class Maybe<T> : _1<Maybe.Companion, T> {
 val <T> _1<Maybe.Companion, T>.narrow: Maybe<T> get() = this as Maybe<T>
 
 private fun <T> comparing(x: _1<Maybe.Companion, T>, y: _1<Maybe.Companion, T>): WhenBothNothing<T> = object : WhenBothNothing<T> {
+    override fun <R> nothing(fn: () -> R): WhenLeftJustRightNothing<T, R> =
+            nothing_nothing { fn() }
+                    .nothing_just { fn() }
+
     override fun <R> nothing_nothing(f1: () -> R): WhenLeftNothingRightJust<T, R> = object : WhenLeftNothingRightJust<T, R> {
         override fun nothing_just(f2: (T) -> R): WhenLeftJustRightNothing<T, R> = object : WhenLeftJustRightNothing<T, R> {
             override fun just_nothing(f3: (T) -> R): WhenBothJust<T, R> = object : WhenBothJust<T, R> {
@@ -190,6 +182,7 @@ private fun <T> comparing(x: _1<Maybe.Companion, T>, y: _1<Maybe.Companion, T>):
 
 private interface WhenBothNothing<out T> {
     fun <R> nothing_nothing(f1: () -> R): WhenLeftNothingRightJust<T, R>
+    fun <R> nothing(fn: () -> R): WhenLeftJustRightNothing<T, R>
 }
 
 private interface WhenLeftNothingRightJust<out T, R> {
