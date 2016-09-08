@@ -46,6 +46,10 @@ interface Num<T> {
 
     infix operator fun T.times(o: T): T = this@Num.`{*}`(this, o)
 
+    val zero: T
+
+    val plusOne: T
+
     @MinimumDefinition(Implementation.MUST)
     fun negate(x: T): T
 
@@ -111,9 +115,11 @@ data class Integral(val value: Choice<Int, Long>) : _0<Integral.Companion>, Comp
                     .onFirst<Choice<Int, Long>> { Choice.First<Int, Long>(-it) }
                     .onSecond { Choice.Second<Int, Long>(-it) } `$` ::Integral
 
-            private val minusOne: Integral = Integral(-1)
-            private val zero: Integral = Integral(0)
-            private val plusOne: Integral = Integral(1)
+            val minusOne: Integral = Integral(-1)
+
+            override val zero: Integral = Integral(0)
+
+            override val plusOne: Integral = Integral(1)
 
             override fun abs(x: Integral): Integral =
                     When(x.value())

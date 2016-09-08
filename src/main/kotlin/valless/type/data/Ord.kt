@@ -46,6 +46,11 @@ interface Ord<T> : _1<Ord.Å, T> {
     }
 
     companion object {
+
+        fun <C, T> deriveFrom(o: Ord<T>, f: (_1<C, T>) -> T): Ord<_1<C, T>> = object : Ord<_1<C, T>> {
+            override fun compare(x: _1<C, T>, y: _1<C, T>): Ordering = o.compare(f(x), f(y))
+        }
+
         fun <T : Comparable<T>> fromComparable(): Ord<T> = object : Ord<T> {
             override fun compare(x: T, y: T): Ordering =
                     When(x.compareTo(y))

@@ -155,13 +155,13 @@ interface Foldable<F> {
     /**
      * <code>Data.Foldable.sum</code>
      */
-    fun sum(xs: _1<F, Int>): Int = foldMap(SumInstances.monoid, xs, ::Sum).sum
+    fun <T> sum(n: Num<T>, xs: _1<F, T>): T = foldMap(Sum.monoid(n), xs, Sum.toSum()).narrow.sum
 
     /**
      * <code>Data.Foldable.product</code>
      */
-    fun product(xs: _1<F, Long>): Long =
-            foldMap(ProductInstance.monoid, xs, ::Product).product
+    fun <T> product(n: Num<T>, xs: _1<F, T>): T =
+            foldMap(Product.monoid(n), xs, Product.toProduct()).narrow.product
 
     /**
      * <code>Data.Foldable.traverse_</code>

@@ -19,6 +19,7 @@ import valless.type._1
 import valless.type.annotation.Implementation
 import valless.type.annotation.MinimumDefinition
 import valless.type.annotation.TypeClass
+import valless.type.data.Num
 
 @TypeClass
 interface Monoid<T> {
@@ -33,6 +34,10 @@ interface Monoid<T> {
 
     interface Deriving<M> {
         fun <T> monoid(m: Monoid<T>): Monoid<_1<M, T>>
+    }
+
+    interface NumConstraint<M> {
+        fun <T> monoid(n: Num<T>): Monoid<_1<M, T>>
     }
 
     @MinimumDefinition(Implementation.MUST)

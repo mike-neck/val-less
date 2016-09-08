@@ -48,6 +48,10 @@ interface Eq<T> : _1<Eq.Å, T> {
 
     companion object {
 
+        fun <C, T> deriveFrom(e: Eq<T>, f: (_1<C, T>) -> T): Eq<_1<C, T>> = object : Eq<_1<C, T>> {
+            override fun eq(x: _1<C, T>, y: _1<C, T>): Bool = e.eq(f(x), f(y))
+        }
+
         fun <T> fromEquals(): Eq<T> = object : Eq<T> {
             override fun eq(x: T, y: T): Bool = (x == y) `$` booleanToBool
         }
