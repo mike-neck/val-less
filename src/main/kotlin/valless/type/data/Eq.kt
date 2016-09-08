@@ -34,6 +34,10 @@ interface Eq<T> : _1<Eq.Å, T> {
         fun <T> eq(e: Eq<T>): Eq<_1<D, T>>
     }
 
+    interface Deriving2<D> {
+        fun <F, S> eq(f: Eq<F>, s: Eq<S>): Eq<_1<_1<D, F>, S>>
+    }
+
     /**
      * Object equality.
      *

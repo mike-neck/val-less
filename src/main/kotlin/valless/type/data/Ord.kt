@@ -35,6 +35,10 @@ interface Ord<T> : _1<Ord.Å, T> {
         fun <T> ord(o: Ord<T>): Ord<_1<D, T>>
     }
 
+    interface Deriving2<D> {
+        fun <F, S> ord(f: Ord<F>, s: Ord<S>): Ord<_1<_1<D, F>, S>>
+    }
+
     @MinimumDefinition(Implementation.MUST)
     fun compare(x: T, y: T): Ordering
 
