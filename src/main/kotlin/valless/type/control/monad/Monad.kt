@@ -16,9 +16,13 @@
 package valless.type.control.monad
 
 import valless.type._1
+import valless.type.annotation.Implementation
+import valless.type.annotation.MinimumDefinition
+import valless.type.annotation.TypeClass
 import valless.type.control.applicative.Applicative
 import valless.util.function.id
 
+@TypeClass
 interface Monad<M> : Applicative<M> {
 
     interface _1_<M> {
@@ -37,6 +41,7 @@ interface Monad<M> : Applicative<M> {
      *     >>= :: (Monad m) => (a -> m b) -> m a -> m b
      * </pre></code>
      */
+    @MinimumDefinition(Implementation.MUST)
     fun <T, R> bind(obj: _1<M, T>, f: (T) -> _1<M, R>): _1<M, R>
 
     /**

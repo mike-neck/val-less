@@ -13,20 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package valless.type.control.applicative
+package valless.type.annotation
 
-import valless.type._1
-import valless.type.annotation.Implementation
-import valless.type.annotation.MinimumDefinition
-import valless.type.annotation.TypeClass
-import valless.type.data.functor.Apply
+/**
+ * This annotation indicates the interface is type-class.
+ */
+@Retention(AnnotationRetention.SOURCE)
+@Target(AnnotationTarget.CLASS)
+annotation class TypeClass
 
-@TypeClass
-interface Applicative<F> : Apply<F> {
+@Retention(AnnotationRetention.SOURCE)
+@Target(AnnotationTarget.FUNCTION)
+annotation class MinimumDefinition(val value: Implementation)
 
-    /**
-     * <code>Control.Applicative.pure</code>
-     */
-    @MinimumDefinition(Implementation.MUST)
-    fun <T> pure(value: T): _1<F, T>
+enum class Implementation {
+    MUST,
+    SELECTION
 }

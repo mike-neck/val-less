@@ -16,6 +16,9 @@
 package valless.type.data.functor
 
 import valless.type._1
+import valless.type.annotation.Implementation
+import valless.type.annotation.MinimumDefinition
+import valless.type.annotation.TypeClass
 import valless.type.control.applicative.Applicative
 import valless.type.data.function.Function.const
 import valless.util.function.flip
@@ -25,11 +28,13 @@ import valless.util.function.flip
  *
  * This is equivalent to an [Applicative] without [Applicative.pure].
  */
+@TypeClass
 interface Apply<F> : Functor<F> {
 
     /**
      * Haskell's &lt;*&gt;
      */
+    @MinimumDefinition(Implementation.MUST)
     infix fun <T, R, G : (T) -> R> _1<F, G>.`(_)`(obj: _1<F, T>): _1<F, R>
 
     fun <T, R, G : (T) -> R> ap(f: _1<F, G>, obj: _1<F, T>): _1<F, R> = f `(_)` obj

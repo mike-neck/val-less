@@ -16,7 +16,11 @@
 package valless.type.control.applicative
 
 import valless.type._1
+import valless.type.annotation.Implementation
+import valless.type.annotation.MinimumDefinition
+import valless.type.annotation.TypeClass
 
+@TypeClass
 interface Alternative<F> : Applicative<F> {
 
     /**
@@ -24,6 +28,7 @@ interface Alternative<F> : Applicative<F> {
      *
      * The identity of [(+)].
      */
+    @MinimumDefinition(Implementation.MUST)
     fun <T> empty(): _1<F, T>
 
     /**
@@ -31,5 +36,6 @@ interface Alternative<F> : Applicative<F> {
      *
      * An associative binary operation.
      */
-    fun <T> `(+)`(): (_1<F, T>) -> ((_1<F, T>) -> _1<F, T>)
+    @MinimumDefinition(Implementation.MUST)
+    fun <T> `(+)`(): (_1<F, T>) -> (_1<F, T>) -> _1<F, T>
 }

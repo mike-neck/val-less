@@ -16,9 +16,13 @@
 package valless.type.data
 
 import valless.type._1
+import valless.type.annotation.Implementation
+import valless.type.annotation.MinimumDefinition
+import valless.type.annotation.TypeClass
 import valless.util.flow.When
 import valless.util.flow.ifSo
 
+@TypeClass
 interface Ord<T> : _1<Ord.Å, T> {
 
     object Å
@@ -31,6 +35,7 @@ interface Ord<T> : _1<Ord.Å, T> {
         fun <T> ord(o: Ord<T>): Ord<_1<D, T>>
     }
 
+    @MinimumDefinition(Implementation.MUST)
     fun compare(x: T, y: T): Ordering
 
     val asEq: Eq<T> get() = object : Eq<T> {

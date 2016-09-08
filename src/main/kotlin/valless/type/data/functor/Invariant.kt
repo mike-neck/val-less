@@ -16,11 +16,16 @@
 package valless.type.data.functor
 
 import valless.type._1
+import valless.type.annotation.Implementation
+import valless.type.annotation.MinimumDefinition
+import valless.type.annotation.TypeClass
 
+@TypeClass
 interface Invariant<F> {
 
     /**
      *
      */
+    @MinimumDefinition(Implementation.MUST)
     fun <T, R> imap(obj: _1<F, T>, f: (T) -> R, g: (R) -> T): _1<F, R>
 }

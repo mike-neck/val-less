@@ -16,8 +16,12 @@
 package valless.type.data
 
 import valless.type._1
+import valless.type.annotation.Implementation
+import valless.type.annotation.MinimumDefinition
+import valless.type.annotation.TypeClass
 import valless.util.function.`$`
 
+@TypeClass
 interface Eq<T> : _1<Eq.Å, T> {
 
     object Å
@@ -37,6 +41,7 @@ interface Eq<T> : _1<Eq.Å, T> {
      * @param y - 2nd parameter of [T].
      * @return [Bool.True] - if [x] equals to [y]. [Bool.False] - if [x] does not equal to [y].
      */
+    @MinimumDefinition(Implementation.MUST)
     fun eq(x: T, y: T): Bool
 
     fun neq(x: T, y: T): Bool = -eq(x, y)

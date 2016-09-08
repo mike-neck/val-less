@@ -16,8 +16,12 @@
 package valless.type.data.functor
 
 import valless.type._1
+import valless.type.annotation.Implementation
+import valless.type.annotation.MinimumDefinition
+import valless.type.annotation.TypeClass
 import valless.type.data.tuple.`()`
 
+@TypeClass
 interface Functor<F> : Invariant<F> {
 
     interface _1_<F> {
@@ -27,6 +31,7 @@ interface Functor<F> : Invariant<F> {
     /**
      * fmap
      */
+    @MinimumDefinition(Implementation.MUST)
     fun <T, R> map(obj: _1<F, T>, f: (T) -> R): _1<F, R>
 
     fun <T, R> map(f: (T) -> R): (_1<F, T>) -> _1<F, R> = { map(it, f) }

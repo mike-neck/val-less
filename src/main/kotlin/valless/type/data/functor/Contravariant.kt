@@ -16,7 +16,11 @@
 package valless.type.data.functor
 
 import valless.type._1
+import valless.type.annotation.Implementation
+import valless.type.annotation.MinimumDefinition
+import valless.type.annotation.TypeClass
 
+@TypeClass
 interface Contravariant<F> : Invariant<F> {
     /**
      * Contravariant laws.
@@ -24,8 +28,10 @@ interface Contravariant<F> : Invariant<F> {
      * * <code>cmap(id()) == id()</code>
      * * <code>cmap(f) + cmap(g) == cmap(g + f)</code>
      */
+    @MinimumDefinition(Implementation.MUST)
     fun <T, R> cmap(obj: _1<F, T>, f: (R) -> T): _1<F, R>
 
+    @MinimumDefinition(Implementation.MUST)
     fun <T, R> phantom(obj: _1<F, T>): _1<F, R>
 
     override fun <T, R> imap(obj: _1<F, T>, f: (T) -> R, g: (R) -> T): _1<F, R> = cmap(obj, g)

@@ -16,8 +16,12 @@
 package valless.type.data
 
 import valless.type._1
+import valless.type.annotation.Implementation
+import valless.type.annotation.MinimumDefinition
+import valless.type.annotation.TypeClass
 import valless.util.function.`$`
 
+@TypeClass
 interface Enum<T> : _1<Enum.Å, T> {
 
     interface _1_<T> {
@@ -26,10 +30,12 @@ interface Enum<T> : _1<Enum.Å, T> {
 
     object Å
 
+    @MinimumDefinition(Implementation.MUST)
     fun toEnum(i: Int): T
 
     val toEnum: (Int) -> T get() = { toEnum(it) }
 
+    @MinimumDefinition(Implementation.MUST)
     fun fromEnum(e: T): Int
 
     val fromEnum: (T) -> Int get() = { fromEnum(it) }

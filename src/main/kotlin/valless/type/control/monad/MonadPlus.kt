@@ -16,8 +16,12 @@
 package valless.type.control.monad
 
 import valless.type._1
+import valless.type.annotation.Implementation
+import valless.type.annotation.MinimumDefinition
+import valless.type.annotation.TypeClass
 import valless.type.control.applicative.Alternative
 
+@TypeClass
 interface MonadPlus<M> : Monad<M>, Alternative<M> {
 
     interface _1_<M> {
@@ -27,10 +31,12 @@ interface MonadPlus<M> : Monad<M>, Alternative<M> {
     /**
      * The identity.
      */
+    @MinimumDefinition(Implementation.MUST)
     fun <T> mzero(): _1<M, T>
 
     /**
      * An associative operation.
      */
+    @MinimumDefinition(Implementation.MUST)
     fun <T> mplus(x: _1<M, T>, y: _1<M, T>): _1<M, T>
 }

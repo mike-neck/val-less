@@ -16,7 +16,11 @@
 package valless.type.data.monoid
 
 import valless.type._1
+import valless.type.annotation.Implementation
+import valless.type.annotation.MinimumDefinition
+import valless.type.annotation.TypeClass
 
+@TypeClass
 interface Monoid<T> {
 
     interface _1_<T> {
@@ -31,10 +35,12 @@ interface Monoid<T> {
         fun <T> monoid(m: Monoid<T>): Monoid<_1<M, T>>
     }
 
+    @MinimumDefinition(Implementation.MUST)
     fun empty(): T
 
     val mempty: T get() = empty()
 
+    @MinimumDefinition(Implementation.MUST)
     fun append(x: T, y: T): T
 
     val mappend: (T) -> (T) -> T get() = { x -> { y -> append(x, y) } }

@@ -16,6 +16,9 @@
 package valless.type.data
 
 import valless.type._1
+import valless.type.annotation.Implementation
+import valless.type.annotation.MinimumDefinition
+import valless.type.annotation.TypeClass
 import valless.type.control.applicative.Alternative
 import valless.type.control.applicative.Applicative
 import valless.type.control.monad.Monad
@@ -31,6 +34,7 @@ import valless.util.function.plus
 /**
  * Minimum Definition is [foldr] or [foldMap]
  */
+@TypeClass
 interface Foldable<F> {
 
     interface _1_<F> {
@@ -44,6 +48,7 @@ interface Foldable<F> {
      * default implementation is
      * <code>foldr f z t = appEndo (foldMap (Endo . f) t) z</code>
      */
+    @MinimumDefinition(Implementation.SELECTION)
     fun <T, R> foldr(ta: _1<F, T>, init: R, f: (T) -> ((R) -> R)): R =
             foldMap(Endo.monoid<R>().monoid, ta, f + toEndo())
                     .narrow.appEndo(init)
@@ -55,6 +60,7 @@ interface Foldable<F> {
      * default implementation is
      * <code>foldMap f = foldr (mappend . f) mempty</code>
      */
+    @MinimumDefinition(Implementation.SELECTION)
     fun <T, R> foldMap(m: Monoid<R>, ta: _1<F, T>, f: (T) -> R): R = foldr(ta, m.mempty, f + m.mappend)
 
     /**

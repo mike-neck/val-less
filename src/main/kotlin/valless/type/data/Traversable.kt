@@ -16,6 +16,9 @@
 package valless.type.data
 
 import valless.type._1
+import valless.type.annotation.Implementation
+import valless.type.annotation.MinimumDefinition
+import valless.type.annotation.TypeClass
 import valless.type.control.applicative.Applicative
 import valless.type.control.monad.Monad
 import valless.type.data.functor.Functor
@@ -25,6 +28,7 @@ import valless.util.function.times
 /**
  * Minimal Definition is [traverse] or [sequenceA]
  */
+@TypeClass
 interface Traversable<T> : Functor<T>, Foldable<T> {
 
     interface _1_<T> {
@@ -37,6 +41,7 @@ interface Traversable<T> : Functor<T>, Foldable<T> {
      *     Applicative f => (a -> f b) -> t a -> f (t b)
      * </pre></code>
      */
+    @MinimumDefinition(Implementation.SELECTION)
     fun <P, R, F> traverse(m: Applicative<F>, ta: _1<T, P>, f: (P) -> _1<F, R>): _1<F, _1<T, R>> =
             sequenceA(m, map(ta, f))
 
@@ -52,6 +57,7 @@ interface Traversable<T> : Functor<T>, Foldable<T> {
      *     Applicative f => t (f a) -> f (t a)
      * </pre></code>
      */
+    @MinimumDefinition(Implementation.SELECTION)
     fun <P, F> sequenceA(m: Applicative<F>, ta: _1<T, _1<F, P>>): _1<F, _1<T, P>> =
             traverse(m, ta, id())
 
