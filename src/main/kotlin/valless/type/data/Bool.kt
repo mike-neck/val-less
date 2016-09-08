@@ -44,7 +44,7 @@ enum class Bool(val raw: Boolean) : _0<Bool.Companion> {
             override val asEq: Eq<Bool> get() = eq
         }
 
-        override val enumInstance: Enum<Bool> = object : Enum<Bool> {
+        override val enm: Enum<Bool> = object : Enum<Bool> {
             override fun toEnum(i: Int): Bool =
                     When<Int, Bool>(i)
                             .case { it == 0 }.then { False }
