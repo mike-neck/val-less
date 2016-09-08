@@ -17,7 +17,9 @@ package valless.type.data
 
 import valless.type._1
 import valless.type._2
+import valless.type.control.applicative.Applicative
 import valless.type.control.monad.Monad
+import valless.type.data.monoid.Monoid
 import valless.type.up
 import valless.util.function.`$`
 
@@ -27,9 +29,30 @@ sealed class Either<L, R> : _2<Either.Companion, L, R> {
 
     class Right<L, R>(val right: R) : Either<L, R>()
 
+    fun adjust(f: (L) -> R): R = when (this) {
+        is Left -> f(this.left)
+        is Right -> this.right
+    }
+
+    fun <V> onLeft(lf: (L) -> V): AdjustingValue<R, V> = object : AdjustingValue<R, V> {
+        override fun onRight(rf: (R) -> V): V = when (this@Either) {
+            is Left -> this@Either.left `$` lf
+            is Right -> this@Either.right `$` rf
+        }
+    }
+
+    interface AdjustingValue<out R, V> {
+        fun onRight(rf: (R) -> V): V
+    }
+
+    fun isLeft(): Bool = if (this is Left) Bool.True else Bool.False
+
+    fun isRight(): Bool = if (this is Right) Bool.True else Bool.False
+
     companion object :
             Eq.Deriving2<Companion>
             , Ord.Deriving2<Companion>
+            , Traversable._2_<Companion>
             , Monad._2_<Companion> {
 
         override fun <F, S> eq(f: Eq<F>, s: Eq<S>): Eq<_1<_1<Companion, F>, S>> = object : Eq<_1<_1<Companion, F>, S>> {
@@ -55,12 +78,31 @@ sealed class Either<L, R> : _2<Either.Companion, L, R> {
         fun <L, R> toLeft(): (L) -> Either<L, R> = { Left(it) }
 
         fun <L, R, F> map(obj: _1<_1<Companion, L>, R>, f: (R) -> F): _1<_1<Companion, L>, F> =
-                obj.up.narrow `$` {
-                    when (it) {
-                        is Left -> Left(it.left)
-                        is Right -> Right(f(it.right))
-                    }
-                }
+                obj.up.narrow
+                        .onLeft<_1<_1<Companion, L>, F>> { Left(it) }
+                        .onRight { f(it) `$` toRight() }
+
+        override fun <L> traversable(): Traversable<_1<Companion, L>> = object : Traversable<_1<Companion, L>> {
+
+            override fun <T, R> map(obj: _1<_1<Companion, L>, T>, f: (T) -> R): _1<_1<Companion, L>, R> =
+                    this@Companion.map(obj, f)
+
+            override fun <T, R> foldr(ta: _1<_1<Companion, L>, T>, init: R, f: (T) -> (R) -> R): R =
+                    ta.up.narrow.onLeft { init }.onRight { f(it)(init) }
+
+            override fun <T, R> foldMap(m: Monoid<R>, ta: _1<_1<Companion, L>, T>, f: (T) -> R): R =
+                    ta.up.narrow.onLeft { m.mempty }.onRight { f(it) }
+
+            override fun <T> isNull(ta: _1<_1<Companion, L>, T>): Bool = ta.up.narrow.isLeft()
+
+            override fun <T> size(ta: _1<_1<Companion, L>, T>): Int =
+                    ta.up.narrow.onLeft { 0 }.onRight { 1 }
+
+            override fun <P, R, F> traverse(m: Applicative<F>, ta: _1<_1<Companion, L>, P>, f: (P) -> _1<F, R>): _1<F, _1<_1<Companion, L>, R>> =
+                    ta.up.narrow
+                            .onLeft<_1<F, _1<_1<Companion, L>, R>>> { m.pure(Left(it)) }
+                            .onRight { m.map(f(it), toRight()) }
+        }
 
         override fun <F> monad(): Monad<_1<Companion, F>> = object : Monad<_1<Companion, F>> {
 
@@ -83,12 +125,9 @@ sealed class Either<L, R> : _2<Either.Companion, L, R> {
                     }
 
             override fun <T, R> bind(obj: _1<_1<Companion, F>, T>, f: (T) -> _1<_1<Companion, F>, R>): _1<_1<Companion, F>, R> =
-                    obj.up.narrow `$` { o ->
-                        when (o) {
-                            is Left -> o.left `$` toLeft()
-                            is Right -> o.right `$` f
-                        }
-                    }
+                    obj.up.narrow
+                            .onLeft<_1<_1<Companion, F>, R>> { Left(it) }
+                            .onRight { f(it) }
         }
     }
 }

@@ -35,6 +35,10 @@ interface Traversable<T> : Functor<T>, Foldable<T> {
         val traversable: Traversable<T>
     }
 
+    interface _2_<T> {
+        fun <S> traversable(): Traversable<_1<T, S>>
+    }
+
     /**
      * <code>Data.Traversable.traverse</code>
      * <code><pre>
