@@ -46,23 +46,23 @@ enum class Bool(val raw: Boolean) : _0<Bool.Companion> {
 
         override val enm: Enum<Bool> = object : Enum<Bool> {
             override fun toEnum(i: Int): Bool =
-                    When<Int, Bool>(i)
+                    When(i)
                             .case { it == 0 }.then { False }
                             .case { it == 1 }.then { True }
                             .els { throw IllegalArgumentException("Illegal Argument for Enum.Bool.fromInt") }
 
             override fun fromEnum(e: Bool): Int =
-                    When<Bool, Int>(e)
+                    When(e)
                             .case { it == False }.then { 0 }
                             .els { 1 }
 
             override fun succ(e: Bool): Bool =
-                    When<Bool, Bool>(e)
+                    When(e)
                             .case { it == False }.then { True }
                             .els { throw IllegalArgumentException("Illegal Argument for Enum.Bool.succ") }
 
             override fun pred(e: Bool): Bool =
-                    When<Bool, Bool>(e)
+                    When(e)
                             .case { it == True }.then { False }
                             .els { throw IllegalArgumentException("Illegal Argument for Enum.Bool.pred") }
         }

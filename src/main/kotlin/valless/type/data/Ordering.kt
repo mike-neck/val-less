@@ -32,27 +32,27 @@ enum class Ordering : _0<Ordering.Companion>, Comparable<Ordering> {
 
 private object InstanceEnumOrdering : Enum<Ordering> {
     override fun toEnum(i: Int): Ordering =
-            When<Int, Ordering>(i)
+            When(i)
                     .case { it == 0 }.then { Ordering.LT }
                     .case { it == 1 }.then { Ordering.EQ }
                     .case { it == 2 }.then { Ordering.GT }
                     .els { throw IllegalArgumentException("Illegal Argument for Enum.Ordering.toEnum") }
 
     override fun fromEnum(e: Ordering): Int =
-            When<Ordering, Int>(e)
+            When(e)
                     .case { it == Ordering.LT }.then { 0 }
                     .case { it == Ordering.EQ }.then { 1 }
                     .case { it == Ordering.GT }.then { 2 }
                     .els { throw IllegalArgumentException("Illegal Argument for Enum.Ordering.fromEnum") }
 
     override fun succ(e: Ordering): Ordering =
-            When<Ordering, Ordering>(e)
+            When(e)
                     .case { it == Ordering.LT }.then { Ordering.EQ }
                     .case { it == Ordering.EQ }.then { Ordering.GT }
                     .els { throw IllegalArgumentException("Illegal Argument for Enum.Ordering.succ") }
 
     override fun pred(e: Ordering): Ordering =
-            When<Ordering, Ordering>(e)
+            When(e)
                     .case { it == Ordering.GT }.then { Ordering.EQ }
                     .case { it == Ordering.EQ }.then { Ordering.LT }
                     .els { throw IllegalArgumentException("Illegal Argument for Enum.Ordering.pred") }

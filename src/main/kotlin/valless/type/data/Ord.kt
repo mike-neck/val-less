@@ -48,7 +48,7 @@ interface Ord<T> : _1<Ord.Å, T> {
     companion object {
         fun <T : Comparable<T>> fromComparable(): Ord<T> = object : Ord<T> {
             override fun compare(x: T, y: T): Ordering =
-                    When<Int, Ordering>(x.compareTo(y))
+                    When(x.compareTo(y))
                             .case { it < 0 }.then { Ordering.LT }
                             .case { it == 0 }.then { Ordering.EQ }
                             .els { Ordering.GT }

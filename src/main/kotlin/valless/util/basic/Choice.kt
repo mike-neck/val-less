@@ -17,16 +17,16 @@ package valless.util.basic
 
 import java.util.*
 
-sealed class Choice<F, out S> {
+sealed class Choice<F, S> {
 
     abstract val first: F
     abstract val second: S
 
-    class First<F, out S>(override val first: F) : Choice<F, S>() {
+    class First<F, S>(override val first: F) : Choice<F, S>() {
         override val second: S get() = throw NoSuchElementException("This is first.")
     }
 
-    class Second<F, out S>(override val second: S) : Choice<F, S>() {
+    class Second<F, S>(override val second: S) : Choice<F, S>() {
         override val first: F get() = throw NoSuchElementException("This is second.")
     }
 
@@ -39,5 +39,10 @@ sealed class Choice<F, out S> {
             is Choice.First -> fh(this@Choice.first)
             is Choice.Second -> sh(this@Choice.second)
         }
+    }
+
+    fun arrange(f: (F) -> S): S = when (this) {
+        is First -> f(this.first)
+        is Second -> this.second
     }
 }

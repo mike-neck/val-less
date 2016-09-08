@@ -43,31 +43,52 @@ infix fun <R> Boolean.ifSo(onTrue: () -> R): If<R> = If(this, onTrue)
  *
  * @param C - an object to be source of condition.
  * @param R - a type of this statement's result.
- * @param value - an object to be source of condition.
- * @param cases - list of conditions and results.
+ * @property value - an object to be source of condition.
+ * @property cases - list of conditions and results.
  */
-class When<C, R>(private val value: C, private val cases: List<Case<C, R>> = emptyList()) {
+interface When<C, R> {
+    val value: C
+    val cases: List<Case<C, R>>
 
-    fun case(condition: (C) -> Boolean): Matched<C, R> = object : Matched<C, R> {
-        override fun then(onTrue: (C) -> R): When<C, R> =
-                Case(condition, onTrue) `$` { cases + it } `$` { When(value, it) }
+    fun case(condition: (C) -> Boolean): Matched<C, R>
+
+    class Case<in C, out R>(val condition: (C) -> Boolean, val onTrue: (C) -> R) : (C) -> Boolean {
+        override operator fun invoke(v: C): Boolean = condition(v)
+        operator fun get(v: C): R = onTrue(v)
     }
-
-    fun els(def: (C) -> R): R = match(value, def, Elements(cases))
-
-    private tailrec fun match(v: C, def: (C) -> R, xs: Elements<Case<C, R>>): R =
-            when (xs) {
-                is Elements.Empty -> def(v)
-                is Elements.HasElements -> if (xs.head(v)) xs.head[v] else match(v, def, xs.tailElements())
-            }
 
     interface Matched<C, R> {
         fun then(onTrue: (C) -> R): When<C, R>
     }
 
-    class Case<in C, out R>(val condition: (C) -> Boolean, val onTrue: (C) -> R) : (C) -> Boolean {
-        override operator fun invoke(v: C): Boolean = condition(v)
-        operator fun get(v: C): R = onTrue(v)
+    fun els(def: (C) -> R): R = match(value, def, Elements(cases))
+
+    private tailrec fun match(v: C, def: (C) -> R, xs: Elements<When.Case<C, R>>): R =
+            when (xs) {
+                is Elements.Empty -> def(v)
+                is Elements.HasElements -> if (xs.head(v)) xs.head[v] else match(v, def, xs.tailElements())
+            }
+
+    companion object {
+        operator fun <C> invoke(value: C) = WhenCondition(value)
+    }
+}
+
+class WhenCondition<C>(val value: C) {
+    fun case(condition: (C) -> Boolean): Matched<C> = object : Matched<C> {
+        override fun <R> then(onTrue: (C) -> R): When<C, R> = WhenBody(value, listOf(When.Case(condition, onTrue)))
+    }
+
+    interface Matched<C> {
+        fun <R> then(onTrue: (C) -> R): When<C, R>
+    }
+}
+
+private class WhenBody<C, R>(override val value: C, override val cases: List<When.Case<C, R>> = emptyList()) : When<C, R> {
+
+    override fun case(condition: (C) -> Boolean): When.Matched<C, R> = object : When.Matched<C, R> {
+        override fun then(onTrue: (C) -> R): When<C, R> =
+                When.Case(condition, onTrue) `$` { cases + it } `$` { WhenBody(value, it) }
     }
 }
 
