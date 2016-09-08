@@ -37,6 +37,8 @@ interface _1<M, A> : _0<M>
  */
 interface _2<M, B, A> : _1<_1<M, B>, A>
 
+val <M, B, A> _1<_1<M, B>, A>.up: _2<M, B, A> get() = this as _2<M, B, A>
+val <M, B, A> _2<M, B, A>.down: _1<_1<M, B>, A> get() = this
 
 /**
  * Represents a higher kinded type of arity 3.
