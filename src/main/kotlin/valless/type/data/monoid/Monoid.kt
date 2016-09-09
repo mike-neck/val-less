@@ -29,7 +29,7 @@ interface Monoid<T> {
     }
 
     interface _2_<M> {
-        fun <T> monoid(): _1_<_1<M, T>>
+        fun <T> monoid(): Monoid<_1<M, T>>
     }
 
     interface Deriving<M> {

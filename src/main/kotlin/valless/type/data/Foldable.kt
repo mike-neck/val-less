@@ -50,7 +50,7 @@ interface Foldable<F> {
      */
     @MinimumDefinition(Implementation.SELECTION)
     fun <T, R> foldr(ta: _1<F, T>, init: R, f: (T) -> ((R) -> R)): R =
-            foldMap(Endo.monoid<R>().monoid, ta, f + toEndo())
+            foldMap(Endo.monoid<R>(), ta, f + toEndo())
                     .narrow.appEndo(init)
 
     /**
@@ -78,7 +78,7 @@ interface Foldable<F> {
      */
     fun <T, R> foldl(ta: _1<F, T>, init: R, f: (R) -> ((T) -> R)): R =
             (f.flip() + toEndo() + toDual())
-                    .let { foldMap(Dual.monoid(Endo.monoid<R>().monoid.narrow), ta, it) }
+                    .let { foldMap(Dual.monoid(Endo.monoid<R>().narrow), ta, it) }
                     .narrow.dual.appEndo(init)
 
     /**
