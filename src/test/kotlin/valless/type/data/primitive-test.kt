@@ -18,6 +18,8 @@ package valless.type.data
 import org.junit.Test
 import valless.util.function.`$`
 import valless.util.shouldBe
+import valless.util.times
+import valless.util.toPair
 import java.util.*
 
 interface OrdEqTest<N> {
@@ -89,13 +91,6 @@ class IntTest : OrdEqTest<Int>, EnumTest<Int> {
             (r.nextInt(20) `$` { rn -> { v: Int -> rn * v } to { v: Int -> i.calc { rn * v } } }) `$`
             { it.first shouldBe it.second }
 }
-
-private fun <T> T.toPair(): Pair<T, T> = this to this
-
-private infix operator fun <P, Q, R> Pair<P, Q>.times(f: (Q) -> R): Pair<P, R> = this.first to f(this.second)
-
-private infix operator fun <P, Q, R, S> Pair<P, Q>.times(p: Pair<(P) -> R, (Q) -> S>): Pair<R, S> =
-        p.first(this.first) to p.second(this.second)
 
 class LongTest : OrdEqTest<Long>, EnumTest<Long> {
 

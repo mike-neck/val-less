@@ -87,3 +87,10 @@ fun <T,R> T.initialize(g: () -> R, f: (T,R) -> Unit): R = g() initBy { f(this, i
 infix fun <T, R> T.and(r: R): Unit = this.let { @Suppress("UNUSED_EXPRESSION")this;r }.unit
 
 fun <T, R> Pair<T, T>.both(f: (T) -> R): Pair<R, R> = f(this.first) to f(this.second)
+
+fun <T> T.toPair(): Pair<T, T> = this to this
+
+infix operator fun <P, Q, R> Pair<P, Q>.times(f: (Q) -> R): Pair<P, R> = this.first to f(this.second)
+
+infix operator fun <P, Q, R, S> Pair<P, Q>.times(p: Pair<(P) -> R, (Q) -> S>): Pair<R, S> =
+        p.first(this.first) to p.second(this.second)
