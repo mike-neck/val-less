@@ -17,4 +17,8 @@ package valless.type.data.tuple
 
 typealias `()` = Unit
 
+data class Tp2<out A, out B>(val _1: A, val _2: B)
 
+val <A, B> Pair<A, B>.tp: Tp2<A, B> get() = Tp2(this.first, this.second)
+
+data class Tp3<out A, out B, out C>(val _1: A, val _2: B, val _3: C)
