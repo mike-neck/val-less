@@ -84,9 +84,16 @@ sealed class List<E> : Iterable<E>, _1<List.Companion, E> {
             override fun <T, R> map(obj: _1<Companion, T>, f: (T) -> R): _1<Companion, R> =
                     ListFunctions.map(obj.narrow, f)
 
-            override fun <P, R, F> traverse(m: Applicative<F>, ta: _1<Companion, P>, f: (P) -> _1<F, R>): _1<F, _1<Companion, R>> {
-                return super.traverse(m, ta, f)
-            }
+            override fun <P, R, F> traverse(m: Applicative<F>, ta: _1<Companion, P>, f: (P) -> _1<F, R>): _1<F, _1<Companion, R>> =
+                    ListFunctions.foldr(ta.narrow, consf(m, f)) { m.pure(Nil()) }
+
+            fun <F, T, R> consf(m: Applicative<F>, f: (T) -> _1<F, R>): (T) -> (_1<F, _1<Companion, R>>) -> (_1<F, _1<Companion, R>>) =
+                    { x -> { fl -> m.ap(liftConcat<F, R>(m)(f(x)), fl) } }
+
+            fun <E> concatList(): (E) -> (_1<Companion, E>) -> _1<Companion, E> = { l -> { r -> l + r.narrow } }
+
+            fun <F, E> liftConcat(f: Applicative<F>): (_1<F, E>) -> _1<F, (_1<Companion, E>) -> _1<Companion, E>> =
+                    f.map(concatList())
 
             override fun <T, R> foldr(ta: _1<Companion, T>, init: R, f: (T) -> (R) -> R): R =
                     ListFunctions.foldr(ta.narrow, f) { init }

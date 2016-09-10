@@ -39,6 +39,8 @@ interface Apply<F> : Functor<F> {
 
     fun <T, R, G : (T) -> R> ap(f: _1<F, G>, obj: _1<F, T>): _1<F, R> = f `(_)` obj
 
+    fun <T, R> ap(): (_1<F, (T) -> R>) -> (_1<F, T>) -> _1<F, R> = { f -> { o -> f `(_)` o } }
+
     /**
      * Haskell's &lt;*
      */
