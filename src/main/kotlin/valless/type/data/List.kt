@@ -169,9 +169,17 @@ object ListFunctions {
                 }
             }
 
-    tailrec fun <E> plus(left: List<E>, right: List<E>): List<E> = when (left) {
+    fun <E> plus(left: List<E>, right: List<E>): List<E> = when (left) {
         is List.Nil -> right
-        is List.Cons -> plus(left.tail, left.head + right)
+        is List.Cons -> when (right) {
+            is List.Nil -> left
+            is List.Cons -> plusInternal(reverse(left), right)
+        }
+    }
+
+    tailrec fun <E> plusInternal(left: List<E>, right: List<E>): List<E> = when (left) {
+        is List.Nil -> right
+        is List.Cons -> plusInternal(left.tail, left.head + right)
     }
 
     tailrec fun <T, R> map(obj: List<T>, f: (T) -> R, building: () -> List<R> = { List.Nil() }): List<R> = when (obj) {
