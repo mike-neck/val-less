@@ -19,6 +19,7 @@ import valless.type._1
 import valless.type.data.functor.Identity
 import valless.type.data.functor.narrow
 import valless.util.function.flip
+import valless.util.function.plus
 
 interface TraversableTest<F> {
 
@@ -29,6 +30,22 @@ interface TraversableTest<F> {
 
     fun <T> identity(): (_1<F, T>) -> Identity<_1<F, T>> = Identity.toIdentity<_1<F, T>>()
 
+    /**
+     * Identity
+     */
     fun `traverse Identity = Identity`(): Unit
 
+
+    fun <T> eta(): (_1<Identity.Companion, T>) -> _1<Maybe.Companion, T> = { Maybe.monad.pure(it.narrow.identity) }
+
+    fun <T> `eta _ traverse f`(): (_1<F, T>) -> _1<Maybe.Companion, _1<F, T>> =
+            tr.traverse<T, T, Identity.Companion>(Identity.monad).flip()(Identity.toIdentity<T>()) + eta()
+
+    fun <T> `traverse (eta _ f)`(): (_1<F, T>) -> _1<Maybe.Companion, _1<F, T>> =
+            tr.traverse<T, T, Maybe.Companion>(Maybe.monad).flip()(Identity.toIdentity<T>() + eta())
+
+    /**
+     * Naturality
+     */
+    fun `eta _ traverse f = traverse (eta _ f)`()
 }

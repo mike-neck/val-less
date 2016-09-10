@@ -94,4 +94,8 @@ class ListTest :
     @Test override fun `traverse Identity = Identity`() = List.of(*randomInts()).toPair() *
             (`traverse Identity`<Int>() to identity<Int>()) `$`
             Identity.eq(e).narrow.test { it.first shouldEqualTo it.second }
+
+    @Test override fun `eta _ traverse f = traverse (eta _ f)`(): Unit = List.of(*randomInts()).toPair() *
+            (`eta _ traverse f`<Int>() to `traverse (eta _ f)`<Int>()) `$`
+            Maybe.eq(e).test { it.first shouldEqualTo it.second }
 }
