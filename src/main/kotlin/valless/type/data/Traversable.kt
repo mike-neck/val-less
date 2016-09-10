@@ -52,7 +52,7 @@ interface Traversable<T> : Functor<T>, Foldable<T> {
     /**
      * function type of [traverse]
      */
-    fun <P, R, F> traverse(m: Applicative<F>): (_1<T, P>) -> (((P) -> _1<F, R>) -> _1<F, _1<T, R>>) =
+    fun <P, R, F> traverse(m: Applicative<F>): (_1<T, P>) -> ((P) -> _1<F, R>) -> _1<F, _1<T, R>> =
             { ta -> { f -> traverse(m, ta, f) } }
 
     /**

@@ -39,6 +39,9 @@ data class Identity<E>(val identity: E) : _1<Identity.Companion, E> {
         fun <T, R> map(ta: _1<Companion, T>, f: (T) -> R): _1<Companion, R> =
                 ta.narrow.identity `$` f `$` toIdentity()
 
+        @Suppress("UNCHECKED_CAST")
+        val <T> Eq<_1<Companion, T>>.narrow: Eq<Identity<T>> get() = this as Eq<Identity<T>>
+
         override fun <T> eq(e: Eq<T>): Eq<_1<Companion, T>> = Eq.deriveFrom(e, runIdentityN())
 
         override fun <T> ord(o: Ord<T>): Ord<_1<Companion, T>> = Ord.deriveFrom(o, runIdentityN())
@@ -102,3 +105,5 @@ data class Identity<E>(val identity: E) : _1<Identity.Companion, E> {
 }
 
 val <E> _1<Identity.Companion, E>.narrow: Identity<E> get() = this as Identity<E>
+
+val <P, R> ((P) -> _1<Identity.Companion, R>).narrow: (P) -> Identity<R> get() = { this(it).narrow }

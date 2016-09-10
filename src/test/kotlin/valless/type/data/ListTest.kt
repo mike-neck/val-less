@@ -17,9 +17,13 @@ package valless.type.data
 
 import org.junit.Test
 import valless.type._1
+import valless.type.data.functor.Identity
+import valless.type.data.functor.Identity.Companion.narrow
+import valless.type.data.functor.narrow
 import valless.type.data.monoid.Monoid
 import valless.type.test
 import valless.util.function.`$`
+import valless.util.function.flip
 import valless.util.shouldBe
 import valless.util.times
 import valless.util.toPair
@@ -34,6 +38,8 @@ class ListTest :
 
     override val o: Ord<_1<List.Companion, Int>>
         get() = List.ord(IntInstance.ord)
+
+    val t: Traversable<List.Companion> = List.Companion.traversable
 
     val r: Random = Random(Date().time)
 
@@ -85,4 +91,11 @@ class ListTest :
                     e.test { it.first shouldEqualTo it.second }
 
     private fun <T> T.toTriple(): Triple<T, T, T> = Triple(this, this, this)
+
+    val `traverse Identity`: (_1<List.Companion, Int>) -> Identity<_1<List.Companion, Int>> =
+            t.traverse<Int, Int, Identity.Companion>(Identity.monad).flip()(Identity.toIdentity<Int>()).narrow
+
+    @Test fun identity() = List.of(*randomInts()).toPair() *
+            (`traverse Identity` to Identity.toIdentity<List<Int>>()) `$`
+            Identity.eq(e).narrow.test { it.first shouldEqualTo it.second.up.narrow }
 }

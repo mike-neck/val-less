@@ -199,9 +199,14 @@ object ListFunctions {
         is List.Cons -> reverse(list.tail, list.head + building)
     }
 
-    tailrec fun <T, R> foldr(list: List<T>, f: (T) -> (R) -> R, gen: () -> R): R = when (list) {
+    fun <T, R> foldr(list: List<T>, f: (T) -> (R) -> R, gen: () -> R): R = when (list) {
         is List.Nil -> gen()
-        is List.Cons -> foldr(list.tail, f) { (list.head `$` f) * gen() }
+        is List.Cons -> foldrInternal(reverse(list), f, gen)
+    }
+
+    tailrec fun <T, R> foldrInternal(list: List<T>, f: (T) -> (R) -> R, gen: () -> R): R = when (list) {
+        is List.Nil -> gen()
+        is List.Cons -> foldrInternal(list.tail, f) { (list.head `$` f) * gen() }
     }
 
     tailrec fun <T> any(list: List<T>, pred: (T) -> Bool): Bool = when (list) {
@@ -233,3 +238,9 @@ object ListFunctions {
 infix operator fun <E> E.plus(list: List<E>): List<E> = List.Cons(this, list)
 
 val <T> _1<List.Companion, T>.narrow: List<T> get() = this as List<T>
+
+@Suppress("UNCHECKED_CAST")
+val <M, T> _1<M, _1<List.Companion, T>>.dn: _1<M, List<T>> get() = this as _1<M, List<T>>
+
+@Suppress("UNCHECKED_CAST")
+val <M, T> _1<M, List<T>>.up: _1<M, _1<List.Companion, T>> get() = this as _1<M, _1<List.Companion, T>>
