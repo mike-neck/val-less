@@ -49,6 +49,7 @@ val <M, B, A> _2<M, B, A>.down: _1<_1<M, B>, A> get() = this
  */
 interface _3<M, C, B, A> : _2<_1<M, C>, B, A>
 
+val <M, C, B, A> _3<M, C, B, A>.down: _2<_1<M, C>, B, A> get() = this
 
 /**
  * Represents a higher kinded type of arity 4.
