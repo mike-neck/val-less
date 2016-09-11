@@ -48,6 +48,8 @@ interface Eq<T> : _1<Eq.Å, T> {
     @MinimumDefinition(Implementation.MUST)
     fun eq(x: T, y: T): Bool
 
+    val eq: (T) -> (T) -> Bool get() = { x -> { y -> eq(x, y) } }
+
     fun neq(x: T, y: T): Bool = -eq(x, y)
 
     companion object {

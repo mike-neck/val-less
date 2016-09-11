@@ -26,9 +26,9 @@ import valless.util.function.uncurry
 
 interface Eq1<F> {
 
-    fun <T> eq1(e: Eq<T>, l: (_1<F, T>), r: (_1<F, T>)): Bool = liftEq(l, r) { p, q -> e.eq(p, q) }
+    fun <T> eq(e: Eq<T>, l: (_1<F, T>), r: (_1<F, T>)): Bool = liftEq(l, r) { p, q -> e.eq(p, q) }
 
-    fun <T> eq1(e: Eq<T>): (_1<F, T>) -> (_1<F, T>) -> Bool = { l -> { r -> liftEq(l, r) { p, q -> e.eq(p, q) } } }
+    fun <T> eq(e: Eq<T>): (_1<F, T>) -> (_1<F, T>) -> Bool = { l -> { r -> liftEq(l, r) { p, q -> e.eq(p, q) } } }
 
     fun <L, R> liftEq(l: _1<F, L>, r: _1<F, R>, f: (L, R) -> Bool): Bool
 

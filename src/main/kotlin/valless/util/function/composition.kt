@@ -27,6 +27,9 @@ fun <P, Q, R, F : (P) -> ((Q) -> R)> F.flip(): (Q) -> ((P) -> R) = { q -> { p ->
 /** apply pair to Function2 */
 val <P, Q, R> ((P, Q) -> R).uncurry: (Pair<P, Q>) -> R get() = { p -> this(p.first, p.second) }
 
+/** uncurrying function */
+val <P, Q, R> ((P) -> (Q) -> R).uncurry: (P, Q) -> R get() = { p, q -> this(p)(q) }
+
 /** Applying function. this is equivalent to the function [let] */
 infix fun <P, R> P.`$`(f: (P) -> R): R = f(this)
 
