@@ -20,6 +20,7 @@ import valless.type.data.*
 import valless.type.data.List
 import valless.type.data.functor.Identity
 import valless.type.data.functor.narrow
+import valless.type.up
 import valless.util.function.`$`
 import valless.util.function.uncurry
 
@@ -35,7 +36,7 @@ interface Eq1<F> {
 
         fun <F, T> fromEqInstance(e: Eq<_1<F, T>>): (_1<F, T>) -> (_1<F, T>) -> Bool = { l -> { r -> e.eq(l, r) } }
 
-        object _Maybe : Eq1<Maybe.Companion> {
+        val maybe: Eq1<Maybe.Companion> = object : Eq1<Maybe.Companion> {
             override fun <L, R> liftEq(l: _1<Maybe.Companion, L>, r: _1<Maybe.Companion, R>, f: (L, R) -> Bool): Bool =
                     maybeCompare(l, r)
                             .nothing_nothing { Bool.True }
@@ -44,12 +45,12 @@ interface Eq1<F> {
                             .just_just(f)
         }
 
-        object _Identity : Eq1<Identity.Companion> {
+        val identity: Eq1<Identity.Companion> = object : Eq1<Identity.Companion> {
             override fun <L, R> liftEq(l: _1<Identity.Companion, L>, r: _1<Identity.Companion, R>, f: (L, R) -> Bool): Bool =
                     (l.narrow to r.narrow) `$` { it.first.identity to it.second.identity } `$` f.uncurry
         }
 
-        object _List : Eq1<List.Companion> {
+        val list: Eq1<List.Companion> = object : Eq1<List.Companion> {
             override fun <L, R> liftEq(l: _1<List.Companion, L>, r: _1<List.Companion, R>, f: (L, R) -> Bool): Bool =
                     tailLiftEq(l.narrow, r.narrow, f)
 
@@ -63,6 +64,15 @@ interface Eq1<F> {
                     is List.Cons -> if (f(l.head, r.head) == Bool.False) Bool.False else tailLiftEq(l, r, f)
                 }
             }
+        }
+
+        fun <T> either(e: Eq<T>): Eq1<_1<Either.Companion, T>> = object : Eq1<_1<Either.Companion, T>> {
+            override fun <L, R> liftEq(l: _1<_1<Either.Companion, T>, L>, r: _1<_1<Either.Companion, T>, R>, f: (L, R) -> Bool): Bool =
+                    eitherCompare(l.up.narrow, r.up.narrow)
+                            .left_left { x, y -> e.eq(x, y) }
+                            .left_right { x, y -> Bool.False }
+                            .right_left { x, y -> Bool.False }
+                            .right_right(f)
         }
     }
 }
@@ -97,19 +107,54 @@ internal fun <P, Q> maybeCompare(l: _1<Maybe.Companion, P>, r: _1<Maybe.Companio
                             .nothing_just { throw IllegalStateException("There is no condition for this state.") }
         }
 
-internal interface MaybeBothNothing<P, Q> {
+internal interface MaybeBothNothing<out P, out Q> {
     fun <R> nothing_nothing(bn: () -> R): MaybeNothingJust<P, Q, R>
     fun <R> nothing(nn: () -> R): MaybeJustNothing<P, Q, R>
 }
 
-internal interface MaybeNothingJust<P, Q, R> {
+internal interface MaybeNothingJust<out P, out Q, R> {
     fun nothing_just(nj: (Q) -> R): MaybeJustNothing<P, Q, R>
 }
 
-internal interface MaybeJustNothing<P, Q, R> {
+internal interface MaybeJustNothing<out P, out Q, R> {
     fun just_nothing(jn: (P) -> R): MaybeJustJust<P, Q, R>
 }
 
-internal interface MaybeJustJust<P, Q, R> {
+internal interface MaybeJustJust<out P, out Q, R> {
     fun just_just(bj: (P, Q) -> R): R
+}
+
+internal fun <I, J, P, Q> eitherCompare(l: Either<I, J>, r: Either<P, Q>): EitherBothLeft<I, J, P, Q> = object : EitherBothLeft<I, J, P, Q> {
+    override fun <R> left_left(ll: (I, P) -> R): EitherLeftRight<I, J, P, Q, R> = object : EitherLeftRight<I, J, P, Q, R> {
+        override fun left_right(lr: (I, Q) -> R): EitherRightLeft<J, P, Q, R> = object : EitherRightLeft<J, P, Q, R> {
+            override fun right_left(rl: (J, P) -> R): EitherBothRight<J, P, Q, R> = object : EitherBothRight<J, P, Q, R> {
+                override fun right_right(rr: (J, Q) -> R): R = when (l) {
+                    is Either.Left -> when (r) {
+                        is Either.Left -> ll(l.left, r.left)
+                        is Either.Right -> lr(l.left, r.right)
+                    }
+                    is Either.Right -> when (r) {
+                        is Either.Left -> rl(l.right, r.left)
+                        is Either.Right -> rr(l.right, r.right)
+                    }
+                }
+            }
+        }
+    }
+}
+
+internal interface EitherBothLeft<out I, out J, P, out Q> {
+    fun <R> left_left(ll: (I, P) -> R): EitherLeftRight<I, J, P, Q, R>
+}
+
+internal interface EitherLeftRight<out I, out J, P, out Q, R> {
+    fun left_right(lr: (I, Q) -> R): EitherRightLeft<J, P, Q, R>
+}
+
+internal interface EitherRightLeft<out J, P, out Q, R> {
+    fun right_left(rl: (J, P) -> R): EitherBothRight<J, P, Q, R>
+}
+
+internal interface EitherBothRight<out J, P, out Q, R> {
+    fun right_right(rr: (J, Q) -> R): R
 }
