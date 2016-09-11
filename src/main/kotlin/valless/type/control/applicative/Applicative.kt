@@ -24,9 +24,18 @@ import valless.type.data.functor.Apply
 @TypeClass
 interface Applicative<F> : Apply<F> {
 
+    interface Deriving2<T> {
+        fun <F, G> applicative(af: Applicative<F>, ag: Applicative<G>): Applicative<_1<_1<T, F>, G>>
+    }
+
     /**
      * <code>Control.Applicative.pure</code>
      */
     @MinimumDefinition(Implementation.MUST)
     fun <T> pure(value: T): _1<F, T>
+
+    /**
+     * function version of [pure]
+     */
+    fun <T> pure(): (T) -> _1<F, T> = { pure(it) }
 }

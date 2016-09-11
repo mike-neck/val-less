@@ -39,6 +39,10 @@ interface Traversable<T> : Functor<T>, Foldable<T> {
         fun <S> traversable(): Traversable<_1<T, S>>
     }
 
+    interface Deriving2<T> {
+        fun <F, G> traversable(af: Traversable<F>, ag: Traversable<G>): Traversable<_1<_1<T, F>, G>>
+    }
+
     /**
      * <code>Data.Traversable.traverse</code>
      * <code><pre>
