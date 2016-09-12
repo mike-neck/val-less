@@ -18,10 +18,9 @@ package valless.type.data.functor
 import valless.type._1
 import valless.type._3
 import valless.type.control.applicative.Applicative
-import valless.type.data.Bool
-import valless.type.data.Eq
-import valless.type.data.Traversable
+import valless.type.data.*
 import valless.type.data.functor.classes.Eq1
+import valless.type.data.functor.classes.Ord1
 import valless.type.data.monoid.Monoid
 import valless.type.up
 import valless.util.function.`$`
@@ -67,6 +66,11 @@ class Compose<F, G, T>(val compose: _1<F, _1<G, T>>) : _3<Compose.Companion, F, 
         fun <F, G, T> eq(ef: Eq1<F>, eg: Eq1<G>, et: Eq<T>): Eq<_1<_1<_1<Companion, F>, G>, T>> = object : Eq<_1<_1<_1<Companion, F>, G>, T>> {
             override fun eq(x: _1<_1<_1<Companion, F>, G>, T>, y: _1<_1<_1<Companion, F>, G>, T>): Bool =
                     ef.liftEq(eg.eq(et).uncurry)(getCompose(x))(getCompose(y))
+        }
+
+        fun <F, G, T> ord(of: Ord1<F>, og: Ord1<G>, ot: Ord<T>): Ord<_1<_1<_1<Companion, F>, G>, T>> = object : Ord<_1<_1<_1<Companion, F>, G>, T>> {
+            override fun compare(x: _1<_1<_1<Companion, F>, G>, T>, y: _1<_1<_1<Companion, F>, G>, T>): Ordering =
+                    of.liftCompare(og.compare(ot).uncurry)(getCompose(x))(getCompose(y))
         }
 
         override fun <F, G> traversable(af: Traversable<F>, ag: Traversable<G>): Traversable<_1<_1<Companion, F>, G>> = object : Traversable<_1<_1<Companion, F>, G>> {

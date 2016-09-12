@@ -90,6 +90,10 @@ fun <T, R> Pair<T, T>.both(f: (T) -> R): Pair<R, R> = f(this.first) to f(this.se
 
 fun <T> T.toPair(): Pair<T, T> = this to this
 
+val <L, R> Pair<L, R>.swap: Pair<R, L> get() = Pair(this.second, this.first)
+
+fun <L, R> swap(): (Pair<L, R>) -> Pair<R, L> = { it.swap }
+
 infix operator fun <P, Q, R> Pair<P, Q>.times(f: (Q) -> R): Pair<P, R> = this.first to f(this.second)
 
 infix operator fun <P, Q, R, S> Pair<P, Q>.times(p: Pair<(P) -> R, (Q) -> S>): Pair<R, S> =

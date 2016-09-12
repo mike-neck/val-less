@@ -19,11 +19,10 @@ import org.junit.Test
 import valless.type._1
 import valless.type.data.*
 import valless.type.data.functor.classes.Eq1
+import valless.type.data.functor.classes.Ord1
 import valless.type.test
-import valless.util.both
+import valless.util.*
 import valless.util.function.`$`
-import valless.util.shouldBe
-import valless.util.toPair
 import java.util.*
 
 class ComposeTest : OrdEqTest<_1<_1<_1<Compose.Companion, Maybe.Companion>, Identity.Companion>, Int>> {
@@ -31,7 +30,7 @@ class ComposeTest : OrdEqTest<_1<_1<_1<Compose.Companion, Maybe.Companion>, Iden
         get() = Compose.eq(Eq1.maybe, Eq1.identity, IntInstance.eq)
 
     override val o: Ord<_1<_1<_1<Compose.Companion, Maybe.Companion>, Identity.Companion>, Int>>
-        get() = throw UnsupportedOperationException()
+        get() = Compose.ord(Ord1.maybe, Ord1.identity, IntInstance.ord)
 
     val r: Random = Random(Date().time)
 
@@ -59,11 +58,25 @@ class ComposeTest : OrdEqTest<_1<_1<_1<Compose.Companion, Maybe.Companion>, Iden
     @Test override fun eqFalseTest() = (r.nextInt(25) to (26 + r.nextInt(25))).both(toCompose) `$`
             { e.eq(it.first, it.second) } shouldBe Bool.False
 
-    override fun ordLtTest() = TODO("not implemented")
+    @Test override fun ordLtTest() = (r.nextInt(100) to (100 + r.nextInt(100))).both(toCompose) `$`
+            { o.compare(it.first, it.second) } shouldBe Ordering.LT
 
-    override fun ordEqTest() = TODO("not implemented")
+    @Test fun nothingIsLtTest() = (Maybe.Nothing<_1<Identity.Companion, Int>>() to r.nextInt()) *
+            (toCompose<Maybe.Companion, Identity.Companion, Int>() to toCompose) `$`
+            { o.compare(it.first, it.second) } shouldBe Ordering.LT
 
-    override fun ordGtTest() = TODO("not implemented")
+    @Test override fun ordEqTest() = r.nextInt().toPair().both(toCompose) `$`
+            { o.compare(it.first, it.second) } shouldBe Ordering.EQ
 
+    @Test fun nothingToNothingIsEq() = Maybe.Nothing<_1<Identity.Companion, Int>>().toPair().both(toCompose()) `$`
+            { o.compare(it.first, it.second) } shouldBe Ordering.EQ
+
+    @Test override fun ordGtTest() = (r.nextInt(100) to (r.nextInt(100) - 100)).both(toCompose) `$`
+            { o.compare(it.first, it.second) } shouldBe Ordering.GT
+
+    @Test fun justIsGtToNothing() = (Maybe.Nothing<_1<Identity.Companion, Int>>() to r.nextInt()) *
+            (toCompose<Maybe.Companion, Identity.Companion, Int>() to toCompose) `$`
+            swap() `$`
+            { o.compare(it.first, it.second) } shouldBe Ordering.GT
 }
 
