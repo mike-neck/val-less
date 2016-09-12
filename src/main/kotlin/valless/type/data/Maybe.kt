@@ -132,6 +132,8 @@ sealed class Maybe<T> : _1<Maybe.Companion, T> {
 
 val <T> _1<Maybe.Companion, T>.narrow: Maybe<T> get() = this as Maybe<T>
 
+val <T> Maybe<T>.wide: _1<Maybe.Companion, T> get() = this
+
 private fun <T, R> inspect(x: _1<Maybe.Companion, T>): WhenNothing<T, R> = object : WhenNothing<T, R> {
     override fun nothing(nf: () -> R): WhenJust<T, R> = object : WhenJust<T, R> {
         override fun just(jf: (T) -> R): R = x.narrow `$` {

@@ -18,11 +18,15 @@ package valless.type.data.functor
 import valless.type._1
 import valless.type._3
 import valless.type.control.applicative.Applicative
+import valless.type.data.Bool
+import valless.type.data.Eq
 import valless.type.data.Traversable
+import valless.type.data.functor.classes.Eq1
 import valless.type.data.monoid.Monoid
 import valless.type.up
 import valless.util.function.`$`
 import valless.util.function.times
+import valless.util.function.uncurry
 
 /**
  * Containered container type.
@@ -59,6 +63,11 @@ class Compose<F, G, T>(val compose: _1<F, _1<G, T>>) : _3<Compose.Companion, F, 
                 ((ag.map(f) `$` { af.map(it) }) * obj.compose) `$` toCompose()
 
         fun <F, G, T> getCompose(c: _1<_1<_1<Companion, F>, G>, T>): _1<F, _1<G, T>> = c.up.up.narrow.compose
+
+        fun <F, G, T> eq(ef: Eq1<F>, eg: Eq1<G>, et: Eq<T>): Eq<_1<_1<_1<Companion, F>, G>, T>> = object : Eq<_1<_1<_1<Companion, F>, G>, T>> {
+            override fun eq(x: _1<_1<_1<Companion, F>, G>, T>, y: _1<_1<_1<Companion, F>, G>, T>): Bool =
+                    ef.liftEq(eg.eq(et).uncurry)(getCompose(x))(getCompose(y))
+        }
 
         override fun <F, G> traversable(af: Traversable<F>, ag: Traversable<G>): Traversable<_1<_1<Companion, F>, G>> = object : Traversable<_1<_1<Companion, F>, G>> {
             override fun <T, R> map(obj: _1<_1<_1<Companion, F>, G>, T>, f: (T) -> R): _1<_1<_1<Companion, F>, G>, R> =

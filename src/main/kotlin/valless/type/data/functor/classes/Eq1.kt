@@ -32,6 +32,8 @@ interface Eq1<F> {
 
     fun <L, R> liftEq(l: _1<F, L>, r: _1<F, R>, f: (L, R) -> Bool): Bool
 
+    fun <L, R> liftEq(f: (L, R) -> Bool): (_1<F, L>) -> (_1<F, R>) -> Bool = { l -> { r -> liftEq(l, r, f) } }
+
     companion object {
 
         fun <F, T> fromEqInstance(e: Eq<_1<F, T>>): (_1<F, T>) -> (_1<F, T>) -> Bool = { l -> { r -> e.eq(l, r) } }

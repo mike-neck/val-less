@@ -107,3 +107,5 @@ data class Identity<E>(val identity: E) : _1<Identity.Companion, E> {
 val <E> _1<Identity.Companion, E>.narrow: Identity<E> get() = this as Identity<E>
 
 val <P, R> ((P) -> _1<Identity.Companion, R>).narrow: (P) -> Identity<R> get() = { this(it).narrow }
+
+val <E> Identity<E>.wide: _1<Identity.Companion, E> get() = this

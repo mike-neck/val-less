@@ -84,7 +84,7 @@ fun <T,R> T.initialize(g: () -> R, f: (T,R) -> Unit): R = g() initBy { f(this, i
  * @param [R] - a execution result of the second function.
  * @return [Unit]
  */
-infix fun <T, R> T.and(r: R): Unit = this.let { @Suppress("UNUSED_EXPRESSION")this;r }.unit
+infix fun <T, R> T.and(r: R): Unit = this.let { r }.unit
 
 fun <T, R> Pair<T, T>.both(f: (T) -> R): Pair<R, R> = f(this.first) to f(this.second)
 

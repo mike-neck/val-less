@@ -31,4 +31,4 @@ Actual   : $this
 fun <P, T> P.testWith(e: Eq<T>, test: ShouldBeByEq<T>.(P) -> Unit): Unit =
         ShouldBeByEq(e).test(this, test)
 
-fun <P, T> Eq<T>.test(test: ShouldBeByEq<T>.(P) -> Unit): (P) -> Unit = { p -> p.testWith(this, test) }
+fun <P : Pair<T, T>, T> Eq<T>.test(test: ShouldBeByEq<T>.(P) -> Unit): (P) -> Unit = { p -> p.testWith(this, test) }
