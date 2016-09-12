@@ -38,6 +38,20 @@ class If<R>(private val condition: Boolean, private val onTrue: () -> R) {
  */
 infix fun <R> Boolean.ifSo(onTrue: () -> R): If<R> = If(this, onTrue)
 
+fun <C> ifItIs(condition: (C) -> Boolean): Then<C> = object : Then<C> {
+    override fun <R> then(onTrue: (C) -> R): Else<C, R> = object : Else<C, R> {
+        override fun els(onFalse: (C) -> R): (C) -> R = { c -> if (condition(c)) onTrue(c) else onFalse(c) }
+    }
+}
+
+interface Then<C> {
+    fun <R> then(onTrue: (C) -> R): Else<C, R>
+}
+
+interface Else<C, R> {
+    fun els(onFalse: (C) -> R): (C) -> R
+}
+
 /**
  * Represents <code>when</code> statement.
  *
