@@ -25,12 +25,17 @@ import valless.util.*
 import valless.util.function.`$`
 import java.util.*
 
-class ComposeTest : OrdEqTest<_1<_1<_1<Compose.Companion, Maybe.Companion>, Identity.Companion>, Int>> {
+class ComposeTest :
+        OrdEqTest<_1<_1<_1<Compose.Companion, Maybe.Companion>, Identity.Companion>, Int>>
+        , TraversableTest<_1<_1<Compose.Companion, Maybe.Companion>, Identity.Companion>> {
     override val e: Eq<_1<_1<_1<Compose.Companion, Maybe.Companion>, Identity.Companion>, Int>>
         get() = Compose.eq(Eq1.maybe, Eq1.identity, IntInstance.eq)
 
     override val o: Ord<_1<_1<_1<Compose.Companion, Maybe.Companion>, Identity.Companion>, Int>>
         get() = Compose.ord(Ord1.maybe, Ord1.identity, IntInstance.ord)
+
+    override val tr: Traversable<_1<_1<Compose.Companion, Maybe.Companion>, Identity.Companion>>
+        get() = Compose.traversable(Maybe.traversable, Identity.traversable)
 
     val r: Random = Random(Date().time)
 
@@ -78,5 +83,13 @@ class ComposeTest : OrdEqTest<_1<_1<_1<Compose.Companion, Maybe.Companion>, Iden
             (toCompose<Maybe.Companion, Identity.Companion, Int>() to toCompose) `$`
             swap() `$`
             { o.compare(it.first, it.second) } shouldBe Ordering.GT
+
+    @Test override fun `traverse Identity = Identity`() = r.nextInt().toPair().both(toCompose) *
+            (`traverse Identity`<Int>() to identity<Int>()) `$`
+            Identity.eq(e).test { it.first shouldEqualTo it.second }
+
+    @Test override fun `eta _ traverse f = traverse (eta _ f)`() = r.nextInt().toPair().both(toCompose) *
+            (`eta _ traverse f`<Int>() to `traverse (eta _ f)`<Int>()) `$`
+            Maybe.eq(e).test { it.first shouldEqualTo it.second }
 }
 
