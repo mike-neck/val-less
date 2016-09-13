@@ -18,8 +18,10 @@ package valless.type.control.monad.trans
 import valless.type._1
 import valless.type._3
 import valless.type.control.monad.Monad
+import valless.type.control.monad.MonadPlus
 import valless.type.data.functor.Identity
 import valless.type.up
+import valless.util.both
 import valless.util.div
 import valless.util.function.`$`
 import valless.util.function.id
@@ -51,6 +53,8 @@ sealed class StateT<S, M, T> : _3<StateT.Companion, S, M, T> {
         fun <P, S, M, T> toStateT(m: Monad<M>, f: (P) -> ((S) -> _1<M, Pair<T, S>>)): (P) -> StateT<S, M, T> =
                 { p: P -> stateT(m, f(p)) }
 
+        fun <S, M, T> narrow(obj: _1<_1<_1<Companion, S>, M>, T>): StateT<S, M, T> = obj.up.up.narrow
+
         fun <S, M, T> narrow(): (_1<_1<_1<Companion, S>, M>, T>) -> StateT<S, M, T> = { it.up.up.narrow }
 
         fun <S, M> monad(m: Monad<M>): Monad<_1<_1<Companion, S>, M>> = object : Monad<_1<_1<Companion, S>, M>> {
@@ -69,6 +73,34 @@ sealed class StateT<S, M, T> : _3<StateT.Companion, S, M, T> {
             override fun <T, R> bind(obj: _1<_1<_1<Companion, S>, M>, T>, f: (T) -> _1<_1<_1<Companion, S>, M>, R>): _1<_1<_1<Companion, S>, M>, R> =
                     obj.up.up.narrow.evalStateT() `$`
                             toStateT(m) { g -> { s: S -> m.bind(g(s), f + narrow() + { it.stateT(s) }) } }
+        }
+
+        fun <S, M> monadPlus(mp: MonadPlus<M>): MonadPlus<_1<_1<Companion, S>, M>> = object : MonadPlus<_1<_1<Companion, S>, M>> {
+
+            private val monad: Monad<_1<_1<Companion, S>, M>> = Companion.monad(mp)
+
+            override fun <T> empty(): _1<_1<_1<Companion, S>, M>, T> =
+                    stateT(mp) { s -> mp.map(mp.mzero<T>()) { t -> t to s } }
+
+            override fun <T, R> map(obj: _1<_1<_1<Companion, S>, M>, T>, f: (T) -> R): _1<_1<_1<Companion, S>, M>, R> =
+                    this@Companion.map(Companion.narrow(obj), f)
+
+            override fun <T> mzero(): _1<_1<_1<Companion, S>, M>, T> = empty()
+
+            override fun <T> pure(value: T): _1<_1<_1<Companion, S>, M>, T> = stateT(mp) { s -> mp.pure(value to s) }
+
+            override fun <T> mplus(x: _1<_1<_1<Companion, S>, M>, T>, y: _1<_1<_1<Companion, S>, M>, T>): _1<_1<_1<Companion, S>, M>, T> =
+                    (x to y).both(Companion.narrow()).both { it.stateT } `$`
+                            toStateT(mp) { p -> { s -> mp.mplus(p.first(s), p.second(s)) } }
+
+            override fun <T> `_+_`(): (_1<_1<_1<Companion, S>, M>, T>) -> (_1<_1<_1<Companion, S>, M>, T>) -> _1<_1<_1<Companion, S>, M>, T> =
+                    { x -> { y -> mplus(x, y) } }
+
+            override fun <T, R, G : (T) -> R> _1<_1<_1<Companion, S>, M>, G>.`(_)`(obj: _1<_1<_1<Companion, S>, M>, T>): _1<_1<_1<Companion, S>, M>, R> =
+                    monad.ap(this, obj)
+
+            override fun <T, R> bind(obj: _1<_1<_1<Companion, S>, M>, T>, f: (T) -> _1<_1<_1<Companion, S>, M>, R>): _1<_1<_1<Companion, S>, M>, R> =
+                    monad.bind(obj, f)
         }
     }
 }
