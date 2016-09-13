@@ -98,3 +98,5 @@ infix operator fun <P, Q, R> Pair<P, Q>.times(f: (Q) -> R): Pair<P, R> = this.fi
 
 infix operator fun <P, Q, R, S> Pair<P, Q>.times(p: Pair<(P) -> R, (Q) -> S>): Pair<R, S> =
         p.first(this.first) to p.second(this.second)
+
+infix operator fun <P, Q, R> Pair<P, Q>.div(f: (P) -> R): Pair<R, Q> = f(this.first) to this.second

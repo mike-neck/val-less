@@ -18,7 +18,9 @@ package valless.type.control.monad.trans
 import valless.type._1
 import valless.type._3
 import valless.type.control.monad.Monad
+import valless.type.data.functor.Identity
 import valless.type.up
+import valless.util.div
 import valless.util.function.`$`
 import valless.util.function.id
 import valless.util.function.plus
@@ -60,7 +62,7 @@ sealed class StateT<S, M, T> : _3<StateT.Companion, S, M, T> {
 
             override fun <T, R, G : (T) -> R> _1<_1<_1<Companion, S>, M>, G>.`(_)`(obj: _1<_1<_1<Companion, S>, M>, T>): _1<_1<_1<Companion, S>, M>, R> =
                     this.up.up.narrow.evalStateT() to obj.up.up.narrow.stateT `$`
-                            { p -> stateT(m) { s: S -> m.ap(m.map(p.first(s), firstMapping()), p.second(s)) } }
+                            toStateT(m) { p -> { s: S -> m.ap(m.map(p.first(s), firstMapping()), p.second(s)) } }
 
             private fun <T, R> firstMapping(): ((T) -> R) -> (Pair<T, S>) -> Pair<R, S> = { f -> { p: Pair<T, S> -> p.swap.times(f).swap } }
 
@@ -71,5 +73,47 @@ sealed class StateT<S, M, T> : _3<StateT.Companion, S, M, T> {
     }
 }
 
+val <S, T> _3<StateT.Companion, S, Identity.Companion, T>.narrow: State<S, T> get() = this as State<S, T>
 val <S, M, T> _3<StateT.Companion, S, M, T>.narrow: StateT<S, M, T> get() = this as StateT<S, M, T>
 
+class State<S, T>(val state: (S) -> Pair<T, S>) : StateT<S, Identity.Companion, T>() {
+
+    override val stateT: (S) -> _1<Identity.Companion, Pair<T, S>>
+        get() = state + Identity.toIdentity()
+
+    override val mn: Monad<Identity.Companion>
+        get() = Identity.monad
+
+    val execState: (S) -> S get() = { s: S -> state(s).second }
+
+    val evalState: (S) -> T get() = { s: S -> state(s).first }
+
+    companion object {
+
+        fun <S, T> narrow(obj: _1<_1<_1<StateT.Companion, S>, Identity.Companion>, T>): State<S, T> = obj.up.up.narrow
+
+        fun <S, T> narrow(): (_1<_1<_1<StateT.Companion, S>, Identity.Companion>, T>) -> State<S, T> = { it.up.up.narrow }
+
+        fun <S, T> state(f: (S) -> Pair<T, S>): State<S, T> = State(f)
+
+        fun <P, S, T> toState(f: (P) -> ((S) -> Pair<T, S>)): (P) -> State<S, T> = { p: P -> State(f(p)) }
+
+        fun <S, T, R> map(obj: State<S, T>, f: (T) -> R): State<S, R> = State { s -> obj.state(s) / f }
+
+        fun <S> monad(): Monad<_1<_1<StateT.Companion, S>, Identity.Companion>> = object : Monad<_1<_1<StateT.Companion, S>, Identity.Companion>> {
+
+            override fun <T, R> map(obj: _1<_1<_1<StateT.Companion, S>, Identity.Companion>, T>, f: (T) -> R): _1<_1<_1<StateT.Companion, S>, Identity.Companion>, R> =
+                    this@Companion.map(Companion.narrow(obj), f)
+
+            override fun <T> pure(value: T): _1<_1<_1<StateT.Companion, S>, Identity.Companion>, T> = State { s -> Pair(value, s) }
+
+            override fun <T, R, G : (T) -> R> _1<_1<_1<StateT.Companion, S>, Identity.Companion>, G>.`(_)`(obj: _1<_1<_1<StateT.Companion, S>, Identity.Companion>, T>): _1<_1<_1<StateT.Companion, S>, Identity.Companion>, R> =
+                    Companion.narrow(this).evalState to Companion.narrow(obj).state `$`
+                            toState { p -> { s -> p.second(s) / p.first(s) } }
+
+            override fun <T, R> bind(obj: _1<_1<_1<StateT.Companion, S>, Identity.Companion>, T>, f: (T) -> _1<_1<_1<StateT.Companion, S>, Identity.Companion>, R>): _1<_1<_1<StateT.Companion, S>, Identity.Companion>, R> =
+                    Companion.narrow(obj).evalState `$`
+                            toState { es -> { s -> narrow(f(es(s))).state(s) } }
+        }
+    }
+}
