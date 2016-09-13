@@ -49,6 +49,14 @@ sealed class StateT<S, M, T> : _3<StateT.Companion, S, M, T> {
 
         fun <S, M> put(m: Monad<M>, s: S): StateT<S, M, Unit> = stateT(m) { m.pure(Unit to s) }
 
+        fun <S, M, T, N, R> mapStateT(n: Monad<N>, obj: StateT<S, M, T>, f: (_1<M, Pair<T, S>>) -> _1<N, Pair<R, S>>): StateT<S, N, R> =
+                stateT(n, obj.stateT + f)
+
+        fun <S, M, T> withState(obj: StateT<S, M, T>, f: (S) -> S): StateT<S, M, T> =
+                stateT(obj.mn, f + obj.stateT)
+
+        fun <S, M> modify(m: Monad<M>, f: (S) -> S): StateT<S, M, Unit> = stateT(m) { m.pure(Unit to f(it)) }
+
         fun <F, S, R> firstMap(f: (F) -> R): Pair<(F) -> R, (S) -> S> = f to id<S>()
 
         fun <S, M, T> stateT(m: Monad<M>, f: (S) -> _1<M, Pair<T, S>>): StateT<S, M, T> = StateTImpl(m, f)
@@ -133,6 +141,12 @@ class State<S, T>(val state: (S) -> Pair<T, S>) : StateT<S, Identity.Companion, 
         fun <S, T> gets(f: (S) -> T): State<S, T> = state { f(it) to it }
 
         fun <S> put(s: S): State<S, Unit> = state { Unit to s }
+
+        fun <S, T, R> mapState(obj: State<S, T>, f: (Pair<T, S>) -> Pair<R, S>): State<S, R> = state(obj.state + f)
+
+        fun <S, T> withState(obj: State<S, T>, f: (S) -> S): State<S, T> = state(f + obj.state)
+
+        fun <S> modify(f: (S) -> S): State<S, Unit> = state { Unit to f(it) }
 
         fun <S, T> narrow(obj: _1<_1<_1<StateT.Companion, S>, Identity.Companion>, T>): State<S, T> = obj.up.up.narrow
 
