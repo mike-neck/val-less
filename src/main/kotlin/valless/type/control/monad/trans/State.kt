@@ -19,6 +19,9 @@ import valless.type._1
 import valless.type._3
 import valless.type.control.monad.Monad
 import valless.type.data.functor.Identity
+import valless.type.up
+import valless.util.function.`$`
+import valless.util.function.id
 import valless.util.function.plus
 import valless.util.swap
 import valless.util.times
@@ -27,31 +30,78 @@ sealed class StateT<S, M, T> : _3<StateT.Companion, S, M, T> {
 
     abstract val stateT: (S) -> _1<M, Pair<T, S>>
 
-    fun execStateT(m: Monad<M>): (S) -> _1<M, S> = { s -> m.map(stateT(s)) { it.second } }
+    abstract internal val mn: Monad<M>
 
-    fun evalStateT(m: Monad<M>): (S) -> _1<M, T> = { s -> m.map(stateT(s)) { it.first } }
+    fun execStateT(): (S) -> _1<M, S> = { s -> mn.map(stateT(s)) { it.second } }
 
-    private class StateTImpl<S, M, T>(val mon: Monad<M>, override val stateT: (S) -> _1<M, Pair<T, S>>) : StateT<S, M, T>()
+    fun evalStateT(): (S) -> _1<M, T> = { s -> mn.map(stateT(s)) { it.first } }
 
-    class State<S, T>(override val stateT: (S) -> _1<Identity.Companion, Pair<T, S>>) : StateT<S, Identity.Companion, T>() {
+    private class StateTImpl<S, M, T>(override val mn: Monad<M>, override val stateT: (S) -> _1<M, Pair<T, S>>) : StateT<S, M, T>()
+
+    internal class State<S, T>(override val stateT: (S) -> _1<Identity.Companion, Pair<T, S>>) : StateT<S, Identity.Companion, T>() {
+
+        override val mn: Monad<Identity.Companion> = Identity.monad
 
         val state: (S) -> Pair<T, S> get() = stateT + Identity.runIdentityN()
-
-        val execState: (S) -> S = execStateT(Identity.monad) + Identity.runIdentityN()
-
-        val evalState: (S) -> T = evalStateT(Identity.monad) + Identity.runIdentityN()
     }
 
     companion object {
 
-        fun <S, T> state(f: (S) -> Pair<T, S>): State<S, T> = State(f + Identity.toIdentity())
+        fun <F, S, R> firstMap(f: (F) -> R): Pair<(F) -> R, (S) -> S> = f to id<S>()
 
         fun <S, M, T> stateT(m: Monad<M>, f: (S) -> _1<M, Pair<T, S>>): StateT<S, M, T> = StateTImpl(m, f)
 
-        fun <S, M, T, R> map(obj: StateT<S, M, T>, f: (T) -> R) = when (obj) {
-            is StateTImpl -> stateT(obj.mon) { s: S -> obj.mon.map(obj.stateT(s)) { it.swap.times(f).swap } }
-            is State -> state { s: S -> obj.state(s).swap.times(f).swap }
+        fun <S, M, T, R> map(obj: StateT<S, M, T>, f: (T) -> R): StateT<S, M, R> =
+                stateT(obj.mn) { obj.mn.map(obj.stateT(it)) { it * firstMap<T, S, R>(f) } }
+
+        fun <P, S, M, T> toStateT(m: Monad<M>, f: (P) -> ((S) -> _1<M, Pair<T, S>>)): (P) -> StateT<S, M, T> =
+                { p: P -> stateT(m, f(p)) }
+
+        fun <S, M, T> narrow(): (_1<_1<_1<Companion, S>, M>, T>) -> StateT<S, M, T> = { it.up.up.narrow }
+
+        private fun <S, T, R> stateMap(obj: State<S, T>, f: (T) -> R): State<S, R> =
+                state { obj.state(it) * firstMap<T, S, R>(f) }
+
+        fun <S, M> monad(m: Monad<M>): Monad<_1<_1<Companion, S>, M>> = object : Monad<_1<_1<Companion, S>, M>> {
+
+            override fun <T, R> map(obj: _1<_1<_1<Companion, S>, M>, T>, f: (T) -> R): _1<_1<_1<Companion, S>, M>, R> =
+                    this@Companion.map(obj.up.up.narrow, f)
+
+            override fun <T> pure(value: T): _1<_1<_1<Companion, S>, M>, T> = StateTImpl(m) { m.pure(value to it) }
+
+            override fun <T, R, G : (T) -> R> _1<_1<_1<Companion, S>, M>, G>.`(_)`(obj: _1<_1<_1<Companion, S>, M>, T>): _1<_1<_1<Companion, S>, M>, R> =
+                    this.up.up.narrow.evalStateT() to obj.up.up.narrow.stateT `$`
+                            { p -> stateT(m) { s: S -> m.ap(m.map(p.first(s), firstMapping()), p.second(s)) } }
+
+            private fun <T, R> firstMapping(): ((T) -> R) -> (Pair<T, S>) -> Pair<R, S> = { f -> { p: Pair<T, S> -> p.swap.times(f).swap } }
+
+            override fun <T, R> bind(obj: _1<_1<_1<Companion, S>, M>, T>, f: (T) -> _1<_1<_1<Companion, S>, M>, R>): _1<_1<_1<Companion, S>, M>, R> =
+                    obj.up.up.narrow.evalStateT() `$`
+                            toStateT(m) { g -> { s: S -> m.bind(g(s), f + narrow() + { it.stateT(s) }) } }
         }
     }
 }
 
+val <S, M, T> _3<StateT.Companion, S, M, T>.narrow: StateT<S, M, T> get() = this as StateT<S, M, T>
+
+object State {
+
+    operator fun <S, T> invoke(f: (S) -> Pair<T, S>): StateT<S, Identity.Companion, T> = StateT.State(f + Identity.toIdentity())
+
+    fun <S, T> state(f: (S) -> Pair<T, S>): StateT.State<S, T> = StateT.State(f + Identity.toIdentity())
+
+    fun <S> monad(): Monad<_1<_1<StateT.Companion, S>, Identity.Companion>> = object : Monad<_1<_1<StateT.Companion, S>, Identity.Companion>> {
+
+        override fun <T, R> map(obj: _1<_1<_1<StateT.Companion, S>, Identity.Companion>, T>, f: (T) -> R): _1<_1<_1<StateT.Companion, S>, Identity.Companion>, R> = TODO("not implemented")
+
+        override fun <T> pure(value: T): _1<_1<_1<StateT.Companion, S>, Identity.Companion>, T> = TODO("not implemented")
+
+        override fun <T, R, G : (T) -> R> _1<_1<_1<StateT.Companion, S>, Identity.Companion>, G>.`(_)`(obj: _1<_1<_1<StateT.Companion, S>, Identity.Companion>, T>): _1<_1<_1<StateT.Companion, S>, Identity.Companion>, R> = TODO("not implemented")
+
+        override fun <T, R> bind(obj: _1<_1<_1<StateT.Companion, S>, Identity.Companion>, T>, f: (T) -> _1<_1<_1<StateT.Companion, S>, Identity.Companion>, R>): _1<_1<_1<StateT.Companion, S>, Identity.Companion>, R> = TODO("not implemented")
+    }
+}
+
+val <S, T> StateT<S, Identity.Companion, T>.execState: (S) -> S get() = this.execStateT() + Identity.runIdentityN()
+
+val <S, T> StateT<S, Identity.Companion, T>.evalState: (S) -> T get() = this.evalStateT() + Identity.runIdentityN()
