@@ -18,7 +18,6 @@ package valless.type.control.monad.trans
 import valless.type._1
 import valless.type._3
 import valless.type.control.monad.Monad
-import valless.type.data.functor.Identity
 import valless.type.up
 import valless.util.function.`$`
 import valless.util.function.id
@@ -38,13 +37,6 @@ sealed class StateT<S, M, T> : _3<StateT.Companion, S, M, T> {
 
     private class StateTImpl<S, M, T>(override val mn: Monad<M>, override val stateT: (S) -> _1<M, Pair<T, S>>) : StateT<S, M, T>()
 
-    internal class State<S, T>(override val stateT: (S) -> _1<Identity.Companion, Pair<T, S>>) : StateT<S, Identity.Companion, T>() {
-
-        override val mn: Monad<Identity.Companion> = Identity.monad
-
-        val state: (S) -> Pair<T, S> get() = stateT + Identity.runIdentityN()
-    }
-
     companion object {
 
         fun <F, S, R> firstMap(f: (F) -> R): Pair<(F) -> R, (S) -> S> = f to id<S>()
@@ -58,9 +50,6 @@ sealed class StateT<S, M, T> : _3<StateT.Companion, S, M, T> {
                 { p: P -> stateT(m, f(p)) }
 
         fun <S, M, T> narrow(): (_1<_1<_1<Companion, S>, M>, T>) -> StateT<S, M, T> = { it.up.up.narrow }
-
-        private fun <S, T, R> stateMap(obj: State<S, T>, f: (T) -> R): State<S, R> =
-                state { obj.state(it) * firstMap<T, S, R>(f) }
 
         fun <S, M> monad(m: Monad<M>): Monad<_1<_1<Companion, S>, M>> = object : Monad<_1<_1<Companion, S>, M>> {
 
@@ -84,24 +73,3 @@ sealed class StateT<S, M, T> : _3<StateT.Companion, S, M, T> {
 
 val <S, M, T> _3<StateT.Companion, S, M, T>.narrow: StateT<S, M, T> get() = this as StateT<S, M, T>
 
-object State {
-
-    operator fun <S, T> invoke(f: (S) -> Pair<T, S>): StateT<S, Identity.Companion, T> = StateT.State(f + Identity.toIdentity())
-
-    fun <S, T> state(f: (S) -> Pair<T, S>): StateT.State<S, T> = StateT.State(f + Identity.toIdentity())
-
-    fun <S> monad(): Monad<_1<_1<StateT.Companion, S>, Identity.Companion>> = object : Monad<_1<_1<StateT.Companion, S>, Identity.Companion>> {
-
-        override fun <T, R> map(obj: _1<_1<_1<StateT.Companion, S>, Identity.Companion>, T>, f: (T) -> R): _1<_1<_1<StateT.Companion, S>, Identity.Companion>, R> = TODO("not implemented")
-
-        override fun <T> pure(value: T): _1<_1<_1<StateT.Companion, S>, Identity.Companion>, T> = TODO("not implemented")
-
-        override fun <T, R, G : (T) -> R> _1<_1<_1<StateT.Companion, S>, Identity.Companion>, G>.`(_)`(obj: _1<_1<_1<StateT.Companion, S>, Identity.Companion>, T>): _1<_1<_1<StateT.Companion, S>, Identity.Companion>, R> = TODO("not implemented")
-
-        override fun <T, R> bind(obj: _1<_1<_1<StateT.Companion, S>, Identity.Companion>, T>, f: (T) -> _1<_1<_1<StateT.Companion, S>, Identity.Companion>, R>): _1<_1<_1<StateT.Companion, S>, Identity.Companion>, R> = TODO("not implemented")
-    }
-}
-
-val <S, T> StateT<S, Identity.Companion, T>.execState: (S) -> S get() = this.execStateT() + Identity.runIdentityN()
-
-val <S, T> StateT<S, Identity.Companion, T>.evalState: (S) -> T get() = this.evalStateT() + Identity.runIdentityN()
