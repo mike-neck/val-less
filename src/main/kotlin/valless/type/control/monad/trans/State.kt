@@ -43,6 +43,12 @@ sealed class StateT<S, M, T> : _3<StateT.Companion, S, M, T> {
 
     companion object {
 
+        fun <S, M> get(m: Monad<M>): StateT<S, M, S> = stateT(m) { m.pure(it to it) }
+
+        fun <S, M, T> gets(m: Monad<M>, f: (S) -> T): StateT<S, M, T> = stateT(m) { m.pure(f(it) to it) }
+
+        fun <S, M> put(m: Monad<M>, s: S): StateT<S, M, Unit> = stateT(m) { m.pure(Unit to s) }
+
         fun <F, S, R> firstMap(f: (F) -> R): Pair<(F) -> R, (S) -> S> = f to id<S>()
 
         fun <S, M, T> stateT(m: Monad<M>, f: (S) -> _1<M, Pair<T, S>>): StateT<S, M, T> = StateTImpl(m, f)
@@ -121,6 +127,12 @@ class State<S, T>(val state: (S) -> Pair<T, S>) : StateT<S, Identity.Companion, 
     val evalState: (S) -> T get() = { s: S -> state(s).first }
 
     companion object {
+
+        fun <S> get(): State<S, S> = state { it to it }
+
+        fun <S, T> gets(f: (S) -> T): State<S, T> = state { f(it) to it }
+
+        fun <S> put(s: S): State<S, Unit> = state { Unit to s }
 
         fun <S, T> narrow(obj: _1<_1<_1<StateT.Companion, S>, Identity.Companion>, T>): State<S, T> = obj.up.up.narrow
 
