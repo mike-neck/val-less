@@ -45,6 +45,11 @@ interface Monad<M> : Applicative<M> {
     fun <T, R> bind(obj: _1<M, T>, f: (T) -> _1<M, R>): _1<M, R>
 
     /**
+     * Function version of [bind].
+     */
+    fun <T, R> bind(): (_1<M, T>) -> ((T) -> _1<M, R>) -> _1<M, R> = { o -> { f -> bind(o, f) } }
+
+    /**
      * Conventional [Monad] join operator.
      *
      * <code>Control.Monad.join</code>
