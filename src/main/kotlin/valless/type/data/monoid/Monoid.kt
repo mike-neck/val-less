@@ -36,6 +36,10 @@ interface Monoid<T> {
         fun <T> monoid(m: Monoid<T>): Monoid<_1<M, T>>
     }
 
+    interface Deriving2<M> {
+        fun <Q, P> monoid(mq: Monoid<Q>, mp: Monoid<P>): Monoid<_1<_1<M, Q>, P>>
+    }
+
     interface NumConstraint<M> {
         fun <T> monoid(n: Num<T>): Monoid<_1<M, T>>
     }

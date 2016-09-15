@@ -28,6 +28,10 @@ interface Functor<F> : Invariant<F> {
         val functor: Functor<F>
     }
 
+    interface _2_<F> {
+        fun <S> functor(): Functor<_1<F, S>>
+    }
+
     /**
      * fmap
      */

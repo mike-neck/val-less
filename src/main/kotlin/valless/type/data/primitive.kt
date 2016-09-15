@@ -15,6 +15,16 @@
  */
 package valless.type.data
 
+import valless.type._1
+import valless.type._2
+import valless.type.control.applicative.Applicative
+import valless.type.data.functor.Functor
+import valless.type.data.monoid.Monoid
+import valless.type.up
+import valless.util.flow.ifItIs
+import valless.util.function.`$`
+import valless.util.function.times
+
 object IntInstance :
         Eq._1_<Int>
         , Ord._1_<Int>
@@ -93,4 +103,78 @@ object LongInstance :
     override fun abs(x: Long): Long = if (x < 0) -x else x
 
     override fun fromIntegral(x: Integral): Long = x.value()
+}
+
+@Suppress("UNCHECKED_CAST")
+val <Q, P> _2<PairInstance, P, Q>.narrow: Pair<P, Q> get() = this as Pair<P, Q>
+
+@Suppress("UNCHECKED_CAST")
+val <Q, P> Pair<P, Q>.hkt: _2<PairInstance, P, Q> get() = this as _2<PairInstance, P, Q>
+
+object PairInstance :
+        Eq.Deriving2<PairInstance>
+        , Ord.Deriving2<PairInstance>
+        , Traversable._2_<PairInstance>
+        , Functor._2_<PairInstance> {
+    fun <P, Q> eq(): Eq<Pair<P, Q>> = Eq.fromEquals()
+
+    fun <P, Q, R> map(p: Pair<P, Q>, f: (Q) -> R): Pair<P, R> = p.first to f(p.second)
+
+    fun <S, T> narrow(obj: _1<_1<PairInstance, S>, T>): Pair<S, T> = obj.up.narrow
+
+    override fun <F, S> eq(f: Eq<F>, s: Eq<S>): Eq<_1<_1<PairInstance, F>, S>> = object : Eq<_1<_1<PairInstance, F>, S>> {
+        override fun eq(x: _1<_1<PairInstance, F>, S>, y: _1<_1<PairInstance, F>, S>): Bool =
+                PairInstance.eq<F, S>().eq(x.up.narrow, y.up.narrow)
+    }
+
+    override fun <F, S> ord(f: Ord<F>, s: Ord<S>): Ord<_1<_1<PairInstance, F>, S>> = object : Ord<_1<_1<PairInstance, F>, S>> {
+        override fun compare(x: _1<_1<PairInstance, F>, S>, y: _1<_1<PairInstance, F>, S>): Ordering =
+                (x.up.narrow to y.up.narrow) `$`
+                        { it to f.compare(it.first.first, it.second.first) } `$`
+                        ifItIs<Pair<Pair<Pair<F, S>, Pair<F, S>>, Ordering>> { it.second == Ordering.EQ }
+                                .then { s.compare(it.first.first.second, it.first.second.second) }
+                                .els { it.second }
+    }
+
+    override fun <S> functor(): Functor<_1<PairInstance, S>> = object : Functor<_1<PairInstance, S>> {
+        override fun <T, R> map(obj: _1<_1<PairInstance, S>, T>, f: (T) -> R): _1<_1<PairInstance, S>, R> =
+                this@PairInstance.map(obj.up.narrow, f).hkt
+    }
+
+    override fun <S> traversable(): Traversable<_1<PairInstance, S>> = object : Traversable<_1<PairInstance, S>> {
+        override fun <T, R> map(obj: _1<_1<PairInstance, S>, T>, f: (T) -> R): _1<_1<PairInstance, S>, R> =
+                this@PairInstance.map(obj.up.narrow, f).hkt
+
+        override fun <T, R> foldr(ta: _1<_1<PairInstance, S>, T>, init: R, f: (T) -> (R) -> R): R =
+                (ta.up.narrow.second `$` f) * init
+
+        override fun <T, R> foldMap(m: Monoid<R>, ta: _1<_1<PairInstance, S>, T>, f: (T) -> R): R =
+                f(ta.up.narrow.second)
+
+        override fun <P, R, F> traverse(m: Applicative<F>, ta: _1<_1<PairInstance, S>, P>, f: (P) -> _1<F, R>): _1<F, _1<_1<PairInstance, S>, R>> =
+                ta.up.narrow `$` { o -> m.map(o.second `$` f) { (o.first to it).hkt } }
+
+        override fun <T> isNull(ta: _1<_1<PairInstance, S>, T>): Bool = Bool.False
+
+        override fun <T> size(ta: _1<_1<PairInstance, S>, T>): Int = 1
+
+        override fun <T> any(ta: _1<_1<PairInstance, S>, T>, pred: (T) -> Bool): Bool =
+                ta.up.narrow.second `$` pred
+
+        override fun <T> all(ta: _1<_1<PairInstance, S>, T>, pred: (T) -> Bool): Bool =
+                ta.up.narrow.second `$` pred
+
+        override fun and(bs: _1<_1<PairInstance, S>, Bool>): Bool = bs.up.narrow.second
+
+        override fun or(bs: _1<_1<PairInstance, S>, Bool>): Bool = bs.up.narrow.second
+
+        override fun <T> elem(e: Eq<T>, sbj: T, xs: _1<_1<PairInstance, S>, T>): Bool =
+                e.eq(sbj, xs.up.narrow.second)
+
+        override fun <T> sum(n: Num<T>, xs: _1<_1<PairInstance, S>, T>): T =
+                xs.up.narrow.second
+
+        override fun <T> product(n: Num<T>, xs: _1<_1<PairInstance, S>, T>): T =
+                xs.up.narrow.second
+    }
 }
