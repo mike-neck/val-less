@@ -18,10 +18,11 @@ package valless.type.control.monad.trans
 import valless.type._1
 import valless.type._3
 import valless.type.control.monad.Monad
-import valless.type.data.Bool
-import valless.type.data.Eq
+import valless.type.data.*
 import valless.type.data.functor.Identity
 import valless.type.data.functor.classes.Eq1
+import valless.type.data.functor.classes.Ord1
+import valless.type.down
 import valless.type.up
 import valless.util.both
 import valless.util.function.`$`
@@ -67,10 +68,28 @@ interface WriterT<W, M, T> : _3<WriterT.Companion, W, M, T> {
          *     (Eq w, Eq1 m, Eq a) => Eq (WriterT w m a)
          * </pre></code>
          */
-        fun <W, M, T> eq(ew: Eq<W>, em: Eq1<M>, et: Eq<T>): Eq<_1<_1<_1<Companion, W>, M>, T>> = object : Eq<_1<_1<_1<Companion, W>, M>, T>> {
+        fun <W, M, T> eq(ew: Eq<W>, em: Eq1<M>, et: Eq<T>): Eq<_1<_1<_1<Companion, W>, M>, T>> =
+                object : Eq<_1<_1<_1<Companion, W>, M>, T>> {
             override fun eq(x: _1<_1<_1<Companion, W>, M>, T>, y: _1<_1<_1<Companion, W>, M>, T>): Bool =
                     (x to y).both { narrow(it) }.both { it.runWriterT } `$`
                             { em.liftEq(it.first, it.second) { l, r -> ew.eq(l.second, r.second) and et.eq(l.first, r.first) } }
+                }
+
+        /**
+         * <pre><code>
+         *     (Ord w, Ord1 m, Ord a) => Ord (WriterT w m a)
+         * </code></pre>
+         */
+        fun <W, M, T> ord(ow: Ord<W>, om: Ord1<M>, ot: Ord<T>): Ord<_1<_1<_1<Companion, W>, M>, T>> =
+                object : Ord<_1<_1<_1<Companion, W>, M>, T>> {
+                    override fun compare(x: _1<_1<_1<Companion, W>, M>, T>, y: _1<_1<_1<Companion, W>, M>, T>): Ordering =
+                            (x to y).both { narrow(it) }.both { it.runWriterT } `$`
+                                    {
+                                        om.liftCompare(it.first, it.second) { l, r ->
+                                            PairInstance.ord(ot, ow)
+                                                    .compare(l.hkt.down, r.hkt.down)
+                                        }
+                                    }
         }
     }
 }
@@ -115,10 +134,23 @@ class Writer<W, T>(val runWriter: Pair<T, W>) : WriterT<W, Identity.Companion, T
          *     (Eq w, Eq a) => Eq (Writer w a)
          * </code></pre>
          */
-        fun <W, T> eq(ew: Eq<W>, et: Eq<T>): Eq<_1<_1<_1<WriterT.Companion, W>, Identity.Companion>, T>> = object : Eq<_1<_1<_1<WriterT.Companion, W>, Identity.Companion>, T>> {
+        fun <W, T> eq(ew: Eq<W>, et: Eq<T>): Eq<_1<_1<_1<WriterT.Companion, W>, Identity.Companion>, T>> =
+                object : Eq<_1<_1<_1<WriterT.Companion, W>, Identity.Companion>, T>> {
             override fun eq(x: _1<_1<_1<WriterT.Companion, W>, Identity.Companion>, T>, y: _1<_1<_1<WriterT.Companion, W>, Identity.Companion>, T>): Bool =
                     (x to y).both { Companion.narrow(it) }.both { it.runWriter } `$`
                             { ew.eq(it.first.second, it.second.second) and et.eq(it.first.first, it.second.first) }
         }
+
+        /**
+         * <pre><code>
+         *     (Ord w, Ord a) => Ord (Writer w a)
+         * </code></pre>
+         */
+        fun <W, T> ord(ow: Ord<W>, ot: Ord<T>): Ord<_1<_1<_1<WriterT.Companion, W>, Identity.Companion>, T>> =
+                object : Ord<_1<_1<_1<WriterT.Companion, W>, Identity.Companion>, T>> {
+                    override fun compare(x: _1<_1<_1<WriterT.Companion, W>, Identity.Companion>, T>, y: _1<_1<_1<WriterT.Companion, W>, Identity.Companion>, T>): Ordering =
+                            (Companion.narrow(x) to Companion.narrow(y)).both { it.runWriter } `$`
+                                    { p -> PairInstance.ord(ot, ow).compare(p.first.hkt, p.second.hkt) }
+                }
     }
 }
