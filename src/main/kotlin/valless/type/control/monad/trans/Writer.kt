@@ -19,6 +19,7 @@ import valless.type._1
 import valless.type._3
 import valless.type.control.monad.Monad
 import valless.type.data.*
+import valless.type.data.functor.Functor
 import valless.type.data.functor.Identity
 import valless.type.data.functor.classes.Eq1
 import valless.type.data.functor.classes.Ord1
@@ -63,6 +64,9 @@ interface WriterT<W, M, T> : _3<WriterT.Companion, W, M, T> {
                 (wr.runWriterT to { p: Pair<T, W> -> p.first to f(p.second) }) `$`
                         { wr.mn.map(it.first, it.second) } `$` toWriterImpl(wr.mn)
 
+        fun <W, M, T, R> map(obj: WriterT<W, M, T>, f: (T) -> R): WriterT<W, M, R> =
+                obj.runWriterT `$` obj.mn.map { p: Pair<T, W> -> f(p.first) to p.second } `$` toWriterImpl(obj.mn)
+
         /**
          * <code><pre>
          *     (Eq w, Eq1 m, Eq a) => Eq (WriterT w m a)
@@ -90,6 +94,16 @@ interface WriterT<W, M, T> : _3<WriterT.Companion, W, M, T> {
                                                     .compare(l.hkt.down, r.hkt.down)
                                         }
                                     }
+        }
+
+        /**
+         * <pre><code>
+         *     Functor m => Functor (WriterT w m)
+         * </code></pre>
+         */
+        fun <W, M> functor(): Functor<_1<_1<Companion, W>, M>> = object : Functor<_1<_1<Companion, W>, M>> {
+            override fun <T, R> map(obj: _1<_1<_1<Companion, W>, M>, T>, f: (T) -> R): _1<_1<_1<Companion, W>, M>, R> =
+                    this@Companion.map(Companion.narrow(obj), f)
         }
     }
 }
@@ -129,6 +143,9 @@ class Writer<W, T>(val runWriter: Pair<T, W>) : WriterT<W, Identity.Companion, T
         fun <W, T> censor(wr: Writer<W, T>, f: (W) -> W): Writer<W, T> =
                 wr.runWriter `$` toWriter { it.first to f(it.second) }
 
+        fun <W, T, R> map(wr: Writer<W, T>, f: (T) -> R): Writer<W, R> =
+                wr.runWriter `$` toWriter { f(it.first) to it.second }
+
         /**
          * <pre><code>
          *     (Eq w, Eq a) => Eq (Writer w a)
@@ -152,5 +169,15 @@ class Writer<W, T>(val runWriter: Pair<T, W>) : WriterT<W, Identity.Companion, T
                             (Companion.narrow(x) to Companion.narrow(y)).both { it.runWriter } `$`
                                     { p -> PairInstance.ord(ot, ow).compare(p.first.hkt, p.second.hkt) }
                 }
+
+        /**
+         * <pre><code>
+         *     Functor (Writer w)
+         * </code></pre>
+         */
+        fun <W> functor(): Functor<_1<_1<WriterT.Companion, W>, Identity.Companion>> = object : Functor<_1<_1<WriterT.Companion, W>, Identity.Companion>> {
+            override fun <T, R> map(obj: _1<_1<_1<WriterT.Companion, W>, Identity.Companion>, T>, f: (T) -> R): _1<_1<_1<WriterT.Companion, W>, Identity.Companion>, R> =
+                    this@Companion.map(Companion.narrow(obj), f)
+        }
     }
 }
