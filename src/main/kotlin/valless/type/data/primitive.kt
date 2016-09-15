@@ -25,6 +25,8 @@ import valless.type.up
 import valless.util.flow.ifItIs
 import valless.util.function.`$`
 import valless.util.function.times
+import valless.util.pair
+import valless.util.times
 
 object IntInstance :
         Eq._1_<Int>
@@ -198,4 +200,15 @@ object PairInstance :
                         { mn.append(it.first, it.second.first) to it.second.second } `$`
                         { it.hkt }
     }
+
+    fun <F, S> monoid(mf: Monoid<F>, ms: Monoid<S>): Monoid<_1<_1<PairInstance, F>, S>> =
+            object : Monoid<_1<_1<PairInstance, F>, S>> {
+
+                override fun empty(): _1<_1<PairInstance, F>, S> = (mf.mempty to ms.mempty).hkt
+
+                override fun append(x: _1<_1<PairInstance, F>, S>, y: _1<_1<PairInstance, F>, S>): _1<_1<PairInstance, F>, S> =
+                        ((PairInstance.narrow(x) to PairInstance.narrow(y)) `$`
+                                { (it.first.first to it.second.first) to (it.first.second to it.second.second) }) *
+                                (mf.mappend.pair to ms.mappend.pair) `$` { it.hkt }
+            }
 }
