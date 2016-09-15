@@ -120,7 +120,18 @@ interface WriterT<W, M, T> : _3<WriterT.Companion, W, M, T> {
 
             override fun <T> pure(value: T): _1<_1<_1<Companion, W>, M>, T> = Impl(mm, mm.pure(value to mw.mempty))
 
-            override fun <T, R, G : (T) -> R> _1<_1<_1<Companion, W>, M>, G>.`(_)`(obj: _1<_1<_1<Companion, W>, M>, T>): _1<_1<_1<Companion, W>, M>, R> = TODO("not implemented")
+            @Suppress("UNCHECKED_CAST")
+            override fun <T, R, G : (T) -> R> _1<_1<_1<Companion, W>, M>, G>.`(_)`(obj: _1<_1<_1<Companion, W>, M>, T>): _1<_1<_1<Companion, W>, M>, R> =
+                    applyTo(Companion.narrow(this as _1<_1<_1<Companion, W>, M>, (T) -> R>), Companion.narrow(obj))
+
+            fun <T, R> applyTo(f: WriterT<W, M, (T) -> R>, obj: WriterT<W, M, T>): WriterT<W, M, R> =
+                    (separate(f.runWriterT) to separate(obj.runWriterT)) `$`
+                            { mm.ap(it.first.first, it.second.first) to mm.liftF2(it.first.second, it.second.second, mw.mappend) } `$`
+                            { mm.liftF2(it.first, it.second) { r: R -> { w: W -> r to w } } } `$`
+                            toWriterImpl(mm)
+
+            fun <P, Q> separate(p: _1<M, Pair<P, Q>>): Pair<_1<M, P>, _1<M, Q>> =
+                    mm.map(p) { it.first } to mm.map(p) { it.second }
 
             override fun <T, R> bind(obj: _1<_1<_1<Companion, W>, M>, T>, f: (T) -> _1<_1<_1<Companion, W>, M>, R>): _1<_1<_1<Companion, W>, M>, R> =
                     (Companion.narrow(obj).runWriterT to

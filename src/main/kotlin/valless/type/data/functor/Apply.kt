@@ -55,8 +55,7 @@ interface Apply<F> : Functor<F> {
 
     fun <T, R> rgt(): (_1<F, T>) -> (_1<F, R>) -> _1<F, R> = { s -> { o -> takeRight(s, o) } }
 
-    val <P, Q, R, G : (P) -> ((Q) -> R)> G.liftF2: (_1<F, P>) -> (_1<F, Q>) -> _1<F, R>
-        get() = { p -> { q -> (p `$$` this) `(_)` q } }
+    fun <P, Q, R> liftF2(p: _1<F, P>, q: _1<F, Q>, f: (P) -> (Q) -> R): _1<F, R> = (p `$$` f) `(_)` q
 
     fun <P, Q, T, R, G : (P) -> (Q) -> (T) -> R> liftF3(g: G):
             (_1<F, P>) -> (_1<F, Q>) -> (_1<F, T>) -> _1<F, R> =
