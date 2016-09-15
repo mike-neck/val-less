@@ -23,6 +23,7 @@ import valless.type.data.functor.Functor
 import valless.type.data.functor.Identity
 import valless.type.data.functor.classes.Eq1
 import valless.type.data.functor.classes.Ord1
+import valless.type.data.monoid.Monoid
 import valless.type.down
 import valless.type.up
 import valless.util.both
@@ -105,6 +106,29 @@ interface WriterT<W, M, T> : _3<WriterT.Companion, W, M, T> {
             override fun <T, R> map(obj: _1<_1<_1<Companion, W>, M>, T>, f: (T) -> R): _1<_1<_1<Companion, W>, M>, R> =
                     this@Companion.map(Companion.narrow(obj), f)
         }
+
+        /**
+         * <code><pre>
+         *     (Monoid w, Applicative m) => Monad (WriterT w m)
+         * </pre></code>
+         */
+        fun <W, M> monad(mw: Monoid<W>, mm: Monad<M>): Monad<_1<_1<Companion, W>, M>> = object : Monad<_1<_1<Companion, W>, M>> {
+
+            override fun <T, R> map(obj: _1<_1<_1<Companion, W>, M>, T>, f: (T) -> R): _1<_1<_1<Companion, W>, M>, R> =
+                    this@Companion.map(Companion.narrow(obj), f)
+
+            override fun <T> pure(value: T): _1<_1<_1<Companion, W>, M>, T> = Impl(mm, mm.pure(value to mw.mempty))
+
+            override fun <T, R, G : (T) -> R> _1<_1<_1<Companion, W>, M>, G>.`(_)`(obj: _1<_1<_1<Companion, W>, M>, T>): _1<_1<_1<Companion, W>, M>, R> = TODO("not implemented")
+
+            override fun <T, R> bind(obj: _1<_1<_1<Companion, W>, M>, T>, f: (T) -> _1<_1<_1<Companion, W>, M>, R>): _1<_1<_1<Companion, W>, M>, R> =
+                    (Companion.narrow(obj).runWriterT to
+                            { p: Pair<T, W> ->
+                                narrow(f(p.first)).runWriterT `$`
+                                        mm.map<Pair<R, W>, Pair<R, W>> { it.first to mw.append(p.second, it.second) }
+                            }) `$`
+                            { mm.bind(it.first, it.second) } `$` toWriterImpl(mm)
+        }
     }
 }
 
@@ -178,6 +202,33 @@ class Writer<W, T>(val runWriter: Pair<T, W>) : WriterT<W, Identity.Companion, T
         fun <W> functor(): Functor<_1<_1<WriterT.Companion, W>, Identity.Companion>> = object : Functor<_1<_1<WriterT.Companion, W>, Identity.Companion>> {
             override fun <T, R> map(obj: _1<_1<_1<WriterT.Companion, W>, Identity.Companion>, T>, f: (T) -> R): _1<_1<_1<WriterT.Companion, W>, Identity.Companion>, R> =
                     this@Companion.map(Companion.narrow(obj), f)
+        }
+
+        /**
+         * <pre><code>
+         *     Monoid w => Monad (Writer w)
+         * </code></pre>
+         */
+        fun <W> monad(mw: Monoid<W>): Monad<_1<_1<WriterT.Companion, W>, Identity.Companion>> = object : Monad<_1<_1<WriterT.Companion, W>, Identity.Companion>> {
+
+            override fun <T, R> map(obj: _1<_1<_1<WriterT.Companion, W>, Identity.Companion>, T>, f: (T) -> R): _1<_1<_1<WriterT.Companion, W>, Identity.Companion>, R> =
+                    this@Companion.map(Companion.narrow(obj), f)
+
+            override fun <T> pure(value: T): _1<_1<_1<WriterT.Companion, W>, Identity.Companion>, T> =
+                    Writer(value to mw.mempty)
+
+            override fun <T, R, G : (T) -> R> _1<_1<_1<WriterT.Companion, W>, Identity.Companion>, G>.`(_)`(obj: _1<_1<_1<WriterT.Companion, W>, Identity.Companion>, T>): _1<_1<_1<WriterT.Companion, W>, Identity.Companion>, R> =
+                    (Companion.narrow(this).runWriter to Companion.narrow(obj).runWriter) `$`
+                            { it.first.first(it.second.first) to mw.append(it.first.second, it.second.second) } `$`
+                            toWriter()
+
+            override fun <T, R> bind(obj: _1<_1<_1<WriterT.Companion, W>, Identity.Companion>, T>, f: (T) -> _1<_1<_1<WriterT.Companion, W>, Identity.Companion>, R>): _1<_1<_1<WriterT.Companion, W>, Identity.Companion>, R> =
+                    (Companion.narrow(obj).runWriter to
+                            { p: Pair<T, W> ->
+                                Companion.narrow(f(p.first)).runWriter `$`
+                                        { it.first to (mw.append(p.second, it.second)) }
+                            }) `$`
+                            { it.second(it.first) } `$` toWriter()
         }
     }
 }
