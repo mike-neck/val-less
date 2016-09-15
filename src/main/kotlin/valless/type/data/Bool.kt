@@ -30,6 +30,12 @@ enum class Bool(val raw: Boolean) : _0<Bool.Companion> {
 
     abstract operator fun unaryMinus(): Bool
 
+    infix fun and(other: Bool): Bool = if (this == True && other == True) True else False
+
+    infix fun or(other: Bool): Bool = if (this == False && other == False) False else False
+
+    infix fun xor(other: Bool): Bool = if (this != other) True else False
+
     companion object : Eq._1_<Bool>, Ord._1_<Bool>, Enum._1_<Bool> {
 
         override val eq: Eq<Bool> = fromEquals()
