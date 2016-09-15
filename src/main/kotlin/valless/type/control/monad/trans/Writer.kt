@@ -17,6 +17,7 @@ package valless.type.control.monad.trans
 
 import valless.type._1
 import valless.type._3
+import valless.type.control.applicative.Applicative
 import valless.type.control.monad.Monad
 import valless.type.data.*
 import valless.type.data.functor.Functor
@@ -129,6 +130,31 @@ interface WriterT<W, M, T> : _3<WriterT.Companion, W, M, T> {
                             }) `$`
                             { mm.bind(it.first, it.second) } `$` toWriterImpl(mm)
         }
+
+        /**
+         * <pre><code>
+         *     Traversable f => Traversable w f
+         * </code></pre>
+         */
+        fun <W, F> traversable(tf: Traversable<F>): Traversable<_1<_1<Companion, W>, F>> = object : Traversable<_1<_1<Companion, W>, F>> {
+
+            fun <T> pick(ta: _1<_1<_1<Companion, W>, F>, T>): _1<F, T> =
+                    tf.map(Companion.narrow(ta).runWriterT, Pair<T, W>::first)
+
+            override fun <T, R> map(obj: _1<_1<_1<Companion, W>, F>, T>, f: (T) -> R): _1<_1<_1<Companion, W>, F>, R> =
+                    this@Companion.map(Companion.narrow(obj), f)
+
+            override fun <T, R> foldr(ta: _1<_1<_1<Companion, W>, F>, T>, init: R, f: (T) -> (R) -> R): R =
+                    tf.foldr(pick(ta), init, f)
+
+            override fun <T, R> foldMap(m: Monoid<R>, ta: _1<_1<_1<Companion, W>, F>, T>, f: (T) -> R): R =
+                    tf.foldMap(m, pick(ta), f)
+
+            override fun <P, R, M> traverse(m: Applicative<M>, ta: _1<_1<_1<Companion, W>, F>, P>, f: (P) -> _1<M, R>): _1<M, _1<_1<_1<Companion, W>, F>, R>> =
+                    Companion.narrow(ta) to { p: Pair<P, W> -> m.map(f(p.first)) { it to p.second } } `$`
+                            { it.first.mn to tf.traverse(m, it.first.runWriterT, it.second) } `$`
+                            { m.map(it.second, toWriterImpl(it.first)) }
+        }
     }
 }
 
@@ -229,6 +255,28 @@ class Writer<W, T>(val runWriter: Pair<T, W>) : WriterT<W, Identity.Companion, T
                                         { it.first to (mw.append(p.second, it.second)) }
                             }) `$`
                             { it.second(it.first) } `$` toWriter()
+        }
+
+        /**
+         * <pre><code>
+         *     Traversable (Writer w)
+         * </code></pre>
+         */
+        fun <W> traversable(): Traversable<_1<_1<WriterT.Companion, W>, Identity.Companion>> = object : Traversable<_1<_1<WriterT.Companion, W>, Identity.Companion>> {
+
+            override fun <T, R> map(obj: _1<_1<_1<WriterT.Companion, W>, Identity.Companion>, T>, f: (T) -> R): _1<_1<_1<WriterT.Companion, W>, Identity.Companion>, R> =
+                    this@Companion.map(Companion.narrow(obj), f)
+
+            override fun <T, R> foldr(ta: _1<_1<_1<WriterT.Companion, W>, Identity.Companion>, T>, init: R, f: (T) -> (R) -> R): R =
+                    f(Companion.narrow(ta).runWriter.first)(init)
+
+            override fun <T, R> foldMap(m: Monoid<R>, ta: _1<_1<_1<WriterT.Companion, W>, Identity.Companion>, T>, f: (T) -> R): R =
+                    f(Companion.narrow(ta).runWriter.first)
+
+            override fun <P, R, F> traverse(m: Applicative<F>, ta: _1<_1<_1<WriterT.Companion, W>, Identity.Companion>, P>, f: (P) -> _1<F, R>): _1<F, _1<_1<_1<WriterT.Companion, W>, Identity.Companion>, R>> =
+                    Companion.narrow(ta).runWriter `$`
+                            { p: Pair<P, W> -> m.map(f(p.first)) { it to p.second } } `$`
+                            { m.map(it, toWriter()) }
         }
     }
 }
