@@ -66,6 +66,11 @@ interface WriterT<W, M, T> : _3<WriterT.Companion, W, M, T> {
                 (wr.runWriterT to { p: Pair<T, W> -> p.first to f(p.second) }) `$`
                         { wr.mn.map(it.first, it.second) } `$` toWriterImpl(wr.mn)
 
+        fun <W, M, T> execWriter(wr: WriterT<W, M, T>): _1<M, W> = wr.mn.map(wr.runWriterT) { it.second }
+
+        fun <W, M, T, V, N, R> mapWriter(mn: Monad<N>, wr: WriterT<W, M, T>, f: (_1<M, Pair<T, W>>) -> _1<N, Pair<R, V>>): WriterT<V, N, R> =
+                f(wr.runWriterT) `$` toWriterImpl(mn)
+
         fun <W, M, T, R> map(obj: WriterT<W, M, T>, f: (T) -> R): WriterT<W, M, R> =
                 obj.runWriterT `$` obj.mn.map { p: Pair<T, W> -> f(p.first) to p.second } `$` toWriterImpl(obj.mn)
 
@@ -203,6 +208,11 @@ class Writer<W, T>(val runWriter: Pair<T, W>) : WriterT<W, Identity.Companion, T
 
         fun <W, T> censor(wr: Writer<W, T>, f: (W) -> W): Writer<W, T> =
                 wr.runWriter `$` toWriter { it.first to f(it.second) }
+
+        fun <W, T> execWriter(wr: Writer<W, T>): W = wr.runWriter.second
+
+        fun <W, T, V, R> mapWriter(wr: Writer<W, T>, f: (Pair<T, W>) -> Pair<R, V>): Writer<V, R> =
+                wr.runWriter `$` f `$` toWriter()
 
         fun <W, T, R> map(wr: Writer<W, T>, f: (T) -> R): Writer<W, R> =
                 wr.runWriter `$` toWriter { f(it.first) to it.second }
