@@ -15,10 +15,9 @@ class Fun(val num: Int) {
 
     fun getContents(): String = """$obj
 
-$suppress
-val $generics $type.fun$num: $function get() = this as $function
-$suppress
-val $generics ($function).fun$num: $type get() = this as $type
+private class F$num$generics(val f: $function): $type
+val $generics $type.fun$num: $function get() = (this as F$num$generics).f
+val $generics ($function).fun$num: $type get() = F$num(this)
 """
 }
 

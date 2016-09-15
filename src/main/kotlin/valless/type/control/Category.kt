@@ -19,6 +19,9 @@ import valless.type._1
 import valless.type.annotation.Implementation
 import valless.type.annotation.MinimumDefinition
 import valless.type.annotation.TypeClass
+import valless.type.data.function.Fun1
+import valless.type.data.function.fun1
+import valless.util.function.plus
 
 @TypeClass
 interface Category<C> {
@@ -28,4 +31,19 @@ interface Category<C> {
 
     @MinimumDefinition(Implementation.MUST)
     fun <P, Q, R> plus(pq: _1<_1<C, P>, Q>, qr: _1<_1<C, Q>, R>): _1<_1<C, P>, R>
+
+    infix fun <P, Q, R> _1<_1<C, P>, Q>.then(next: _1<_1<C, Q>, R>): _1<_1<C, P>, R> = this@Category.plus(this, next)
+
+    fun <P> exec(action: Category<C>.() -> P): P = this.action()
+
+    companion object {
+
+        val fun1: Category<Fun1> get() = object : Category<Fun1> {
+
+            override fun <T> id(): _1<_1<Fun1, T>, T> = { t: T -> t }.fun1
+
+            override fun <P, Q, R> plus(pq: _1<_1<Fun1, P>, Q>, qr: _1<_1<Fun1, Q>, R>): _1<_1<Fun1, P>, R> =
+                    (pq.fun1 + qr.fun1).fun1
+        }
+    }
 }
