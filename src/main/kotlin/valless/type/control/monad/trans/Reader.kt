@@ -50,8 +50,12 @@ interface ReaderT<R, M, T> : _3<ReaderT.Companion, R, M, T> {
 
             override fun <T> pure(value: T): _1<_1<_1<Companion, R>, M>, T> = Impl(mn) { mn.pure(value) }
 
+            @Suppress("UNCHECKED_CAST")
             override fun <P, Q, G : (P) -> Q> _1<_1<_1<Companion, R>, M>, G>.`(_)`(obj: _1<_1<_1<Companion, R>, M>, P>): _1<_1<_1<Companion, R>, M>, Q> =
-                    (Companion.narrow(this).runReaderT to Companion.narrow(obj).runReaderT) `$`
+                    applyTo(Companion.narrow(this as _1<_1<_1<Companion, R>, M>, (P) -> Q>), Companion.narrow(obj))
+
+            fun <P, Q> applyTo(f: ReaderT<R, M, (P) -> Q>, obj: ReaderT<R, M, P>): ReaderT<R, M, Q> =
+                    (f.runReaderT to obj.runReaderT) `$`
                             toReaderT(mn) { p -> { r: R -> mn.ap(p.first(r), p.second(r)) } }
 
             override fun <P, Q> bind(obj: _1<_1<_1<Companion, R>, M>, P>, f: (P) -> _1<_1<_1<Companion, R>, M>, Q>): _1<_1<_1<Companion, R>, M>, Q> =

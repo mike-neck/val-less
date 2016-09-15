@@ -78,8 +78,12 @@ sealed class StateT<S, M, T> : _3<StateT.Companion, S, M, T> {
 
             override fun <T> pure(value: T): _1<_1<_1<Companion, S>, M>, T> = StateTImpl(m) { m.pure(value to it) }
 
+            @Suppress("UNCHECKED_CAST")
             override fun <T, R, G : (T) -> R> _1<_1<_1<Companion, S>, M>, G>.`(_)`(obj: _1<_1<_1<Companion, S>, M>, T>): _1<_1<_1<Companion, S>, M>, R> =
-                    this.up.up.narrow.evalStateT() to obj.up.up.narrow.stateT `$`
+                    applyTo((this as _1<_1<_1<Companion, S>, M>, (T) -> R>).up.up.narrow, obj.up.up.narrow)
+
+            fun <T, R> applyTo(f: StateT<S, M, (T) -> R>, obj: StateT<S, M, T>): StateT<S, M, R> =
+                    f.evalStateT() to obj.stateT `$`
                             toStateT(m) { p -> { s: S -> m.ap(m.map(p.first(s), firstMapping()), p.second(s)) } }
 
             private fun <T, R> firstMapping(): ((T) -> R) -> (Pair<T, S>) -> Pair<R, S> = { f -> { p: Pair<T, S> -> p.swap.times(f).swap } }
