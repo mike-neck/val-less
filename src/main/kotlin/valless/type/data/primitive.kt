@@ -18,6 +18,7 @@ package valless.type.data
 import valless.type._1
 import valless.type._2
 import valless.type.control.applicative.Applicative
+import valless.type.control.monad.Monad
 import valless.type.data.functor.Functor
 import valless.type.data.monoid.Monoid
 import valless.type.up
@@ -176,5 +177,25 @@ object PairInstance :
 
         override fun <T> product(n: Num<T>, xs: _1<_1<PairInstance, S>, T>): T =
                 xs.up.narrow.second
+    }
+
+    fun <S> monad(mn: Monoid<S>): Monad<_1<PairInstance, S>> = object : Monad<_1<PairInstance, S>> {
+
+        override fun <T, R> map(obj: _1<_1<PairInstance, S>, T>, f: (T) -> R): _1<_1<PairInstance, S>, R> =
+                this@PairInstance.map(PairInstance.narrow(obj), f).hkt
+
+        override fun <T> pure(value: T): _1<_1<PairInstance, S>, T> =
+                (mn.mempty to value).hkt
+
+        override fun <T, R, G : (T) -> R> _1<_1<PairInstance, S>, G>.`(_)`(obj: _1<_1<PairInstance, S>, T>): _1<_1<PairInstance, S>, R> =
+                (PairInstance.narrow(this) to PairInstance.narrow(obj)) `$`
+                        { mn.append(it.first.first, it.second.first) to it.first.second(it.second.second) } `$`
+                        { it.hkt }
+
+        override fun <T, R> bind(obj: _1<_1<PairInstance, S>, T>, f: (T) -> _1<_1<PairInstance, S>, R>): _1<_1<PairInstance, S>, R> =
+                PairInstance.narrow(obj) `$`
+                        { it.first to narrow(f(it.second)) } `$`
+                        { mn.append(it.first, it.second.first) to it.second.second } `$`
+                        { it.hkt }
     }
 }
