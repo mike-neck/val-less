@@ -35,6 +35,9 @@ sealed class Maybe<T> : _1<Maybe.Companion, T> {
             , Ord.Deriving<Companion>
             , Monoid.Deriving<Companion>
             , Traversable._1_<Companion> {
+
+        fun <T> narrow(): (_1<Companion, T>) -> Maybe<T> = { it.narrow }
+
         override fun <T> eq(e: Eq<T>): Eq<_1<Companion, T>> = object : Eq<_1<Companion, T>> {
 
             override fun eq(x: _1<Companion, T>, y: _1<Companion, T>): Bool =
