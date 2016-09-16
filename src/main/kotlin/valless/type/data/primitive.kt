@@ -108,11 +108,11 @@ object LongInstance :
     override fun fromIntegral(x: Integral): Long = x.value()
 }
 
-@Suppress("UNCHECKED_CAST")
-val <Q, P> _2<PairInstance, P, Q>.narrow: Pair<P, Q> get() = this as Pair<P, Q>
+private class PairHk<P, Q>(val p: Pair<P, Q>) : _2<PairInstance, P, Q>
 
-@Suppress("UNCHECKED_CAST")
-val <Q, P> Pair<P, Q>.hkt: _2<PairInstance, P, Q> get() = this as _2<PairInstance, P, Q>
+val <Q, P> _2<PairInstance, P, Q>.narrow: Pair<P, Q> get() = (this as PairHk<P, Q>).p
+
+val <Q, P> Pair<P, Q>.hkt: _2<PairInstance, P, Q> get() = PairHk(this)
 
 object PairInstance :
         Eq.Deriving2<PairInstance>
