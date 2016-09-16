@@ -60,16 +60,15 @@ class First<T>(val getFirst: Maybe<T>) : _1<First.Companion, T> {
 
         override val monad: Monad<Companion> = object : Monad<Companion> {
 
+            val mm: Monad<Maybe.Companion> = Maybe.monad
+
             override fun <T, R> map(obj: _1<Companion, T>, f: (T) -> R): _1<Companion, R> =
                     this@Companion.map(obj.narrow, f)
 
             override fun <T> pure(value: T): _1<Companion, T> = First(Maybe.Just(value))
 
             override fun <T, R, G : (T) -> R> _1<Companion, G>.`(_)`(obj: _1<Companion, T>): _1<Companion, R> =
-                    maybeCompare(this.narrow.getFirst, obj.narrow.getFirst)
-                            .nothing { First<R>(Maybe.Nothing()) }
-                            .just_nothing { First(Maybe.Nothing()) }
-                            .just_just { f, v -> First(Maybe.Just(f(v))) }
+                    mm.ap(this.narrow.getFirst, obj.narrow.getFirst) `$` Maybe.narrow() `$` toFirst()
 
             override fun <T, R> bind(obj: _1<Companion, T>, f: (T) -> _1<Companion, R>): _1<Companion, R> =
                     obj.narrow.getFirst `$` { v ->
@@ -82,27 +81,19 @@ class First<T>(val getFirst: Maybe<T>) : _1<First.Companion, T> {
 
         override val traversable: Traversable<Companion> = object : Traversable<Companion> {
 
+            val mt: Traversable<Maybe.Companion> = Maybe.traversable
+
             override fun <T, R> map(obj: _1<Companion, T>, f: (T) -> R): _1<Companion, R> =
                     this@Companion.map(obj.narrow, f)
 
             override fun <T, R> foldr(ta: _1<Companion, T>, init: R, f: (T) -> (R) -> R): R =
-                    ta.narrow.getFirst `$` {
-                        when (it) {
-                            is Maybe.Nothing -> init
-                            is Maybe.Just -> f(it.value)(init)
-                        }
-                    }
+                    ta.narrow.getFirst `$` { mt.foldr(it, init, f) }
 
             override fun <T, R> foldMap(m: Monoid<R>, ta: _1<Companion, T>, f: (T) -> R): R =
-                    ta.narrow.getFirst `$` {
-                        when (it) {
-                            is Maybe.Nothing -> m.mempty
-                            is Maybe.Just -> f(it.value)
-                        }
-                    }
+                    ta.narrow.getFirst `$` { mt.foldMap(m, it, f) }
 
             override fun <P, R, F> traverse(m: Applicative<F>, ta: _1<Companion, P>, f: (P) -> _1<F, R>): _1<F, _1<Companion, R>> =
-                    (ta.narrow.getFirst `$` Maybe.traversable.traverse<P, R, F>(m)) * f `$`
+                    (ta.narrow.getFirst `$` mt.traverse<P, R, F>(m)) * f `$`
                             m.map(Maybe.narrow<R>()) `$` m.map(toFirst())
         }
 
@@ -148,16 +139,15 @@ class Last<T>(val getLast: Maybe<T>) : _1<Last.Companion, T> {
 
         override val monad: Monad<Companion> = object : Monad<Companion> {
 
+            val mm: Monad<Maybe.Companion> = Maybe.monad
+
             override fun <T, R> map(obj: _1<Companion, T>, f: (T) -> R): _1<Companion, R> =
                     this@Companion.map(obj.narrow, f)
 
             override fun <T> pure(value: T): _1<Companion, T> = Last(Maybe.Just(value))
 
             override fun <T, R, G : (T) -> R> _1<Companion, G>.`(_)`(obj: _1<Companion, T>): _1<Companion, R> =
-                    maybeCompare(this.narrow.getLast, obj.narrow.getLast)
-                            .nothing<_1<Companion, R>> { Last(Maybe.Nothing()) }
-                            .just_nothing { Last(Maybe.Nothing()) }
-                            .just_just { l, r -> Last(Maybe.Just(l(r))) }
+                    mm.ap(this.narrow.getLast, obj.narrow.getLast).narrow `$` toLast<R>()
 
             override fun <T, R> bind(obj: _1<Companion, T>, f: (T) -> _1<Companion, R>): _1<Companion, R> =
                     obj.narrow.getLast `$` {
@@ -170,27 +160,19 @@ class Last<T>(val getLast: Maybe<T>) : _1<Last.Companion, T> {
 
         override val traversable: Traversable<Companion> = object : Traversable<Companion> {
 
+            val mt: Traversable<Maybe.Companion> = Maybe.traversable
+
             override fun <T, R> map(obj: _1<Companion, T>, f: (T) -> R): _1<Companion, R> =
                     this@Companion.map(obj.narrow, f)
 
             override fun <T, R> foldr(ta: _1<Companion, T>, init: R, f: (T) -> (R) -> R): R =
-                    ta.narrow.getLast `$` {
-                        when (it) {
-                            is Maybe.Nothing -> init
-                            is Maybe.Just -> f(it.value)(init)
-                        }
-                    }
+                    ta.narrow.getLast `$` { mt.foldr(it, init, f) }
 
             override fun <T, R> foldMap(m: Monoid<R>, ta: _1<Companion, T>, f: (T) -> R): R =
-                    ta.narrow.getLast `$` {
-                        when (it) {
-                            is Maybe.Nothing -> m.mempty
-                            is Maybe.Just -> f(it.value)
-                        }
-                    }
+                    ta.narrow.getLast `$` { mt.foldMap(m, it, f) }
 
             override fun <P, R, F> traverse(m: Applicative<F>, ta: _1<Companion, P>, f: (P) -> _1<F, R>): _1<F, _1<Companion, R>> =
-                    (ta.narrow.getLast `$` Maybe.traversable.traverse<P, R, F>(m)) * f `$`
+                    (ta.narrow.getLast `$` mt.traverse<P, R, F>(m)) * f `$`
                             m.map(Maybe.narrow<R>()) `$` m.map(toLast())
         }
     }
