@@ -102,6 +102,16 @@ class ListTest :
     @Test fun mergeSort() = randomInts().toPair() *
             { List.of(*it) } *
             ({ a: Array<Int> -> a.sorted().toTypedArray() `$` { List.of(*it) } } to
-                    { l: List<Int> -> ListFunctions.sort(l, IntInstance.ord.compare) }) `$`
+                    { l: List<Int> -> List.sort(IntInstance.ord, l) }) `$`
+            e.test { it.first shouldEqualTo it.second }
+
+    val canDivBy3: (Int) -> Boolean = { it % 3 == 0 }
+
+    val <T> ((T) -> Boolean).bool: (T) -> Bool get() = { Eq.booleanToBool(this(it)) }
+
+    @Test fun filter() = randomInts().toPair() *
+            { List.of(*it) } *
+            ({ a: Array<Int> -> a.filter(canDivBy3).toTypedArray() `$` { List.of(*it) } } to
+                    { l: List<Int> -> List.filter(l, canDivBy3.bool) }) `$`
             e.test { it.first shouldEqualTo it.second }
 }
