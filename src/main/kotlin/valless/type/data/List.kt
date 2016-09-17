@@ -63,6 +63,15 @@ sealed class List<E> : Iterable<E>, _1<List.Companion, E> {
 
         fun <E> empty(): List<E> = Nil()
 
+        fun <E> filter(list: List<E>, pred: (E) -> Bool): List<E> = ListFunctions.filter(list, pred)
+
+        fun <E> sort(ord: Ord<E>, list: List<E>): List<E> = sort(list, ord.compare)
+
+        fun <E> sort(list: List<E>, by: (E) -> (E) -> Ordering): List<E> = when (list) {
+            is Nil -> list
+            is Cons -> ListFunctions.sort(list, by)
+        }
+
         override fun <T> eq(e: Eq<T>): Eq<_1<Companion, T>> = object : Eq<_1<Companion, T>> {
             override fun eq(x: _1<Companion, T>, y: _1<Companion, T>): Bool =
                     ListFunctions.eq(e, x.narrow, y.narrow)
@@ -232,6 +241,110 @@ object ListFunctions {
     tailrec fun <T, R> bind(xs: List<T>, f: (T) -> List<R>, rs: List<R> = List.Nil()): List<R> = when (xs) {
         is List.Nil -> rs
         is List.Cons -> bind(xs.tail, f, plus(rs, f(xs.head)))
+    }
+
+    tailrec fun <E> filter(list: List<E>, pred: (E) -> Bool, filtered: List<E> = List.Nil()): List<E> = when (list) {
+        is List.Nil -> reverse(filtered)
+        is List.Cons -> filter(list.tail, pred, ListFunctions.filtered(list.head, pred, filtered))
+    }
+
+    internal fun <E> filtered(item: E, pred: (E) -> Bool, filtered: List<E>): List<E> = when (pred(item)) {
+        Bool.True -> item + filtered
+        Bool.False -> filtered
+    }
+
+    fun <E> sort(list: List<E>, by: (E) -> (E) -> Ordering): List<E> =
+            partition(list, by, defaultParted()) `$` merge(by)
+
+    internal fun <E> defaultParted(): (List<E>) -> List<List<E>> = { if (it is List.Nil) List.empty() else List.of(it) }
+
+    internal fun <E> partition(list: List<E>, by: (E) -> (E) -> Ordering, parted: (List<E>) -> List<List<E>>): List<List<E>> =
+            Part(list) `$` {
+                when (it) {
+                    is Part.Empty -> parted(it.list)
+                    is Part.Single -> parted(it.list)
+                    is Part.Multi ->
+                        if ((it.first `$` by) * it.second == Ordering.GT) desc(it.second, it.list, List.of(it.first), parted, by)
+                        else asc(it.second, it.list, { e -> List.Cons(it.first, List.of(e)) }, parted, by)
+                }
+            }
+
+    internal tailrec fun <E> desc(first: E, list: List<E>, mid: List<E>, parted: (List<E>) -> List<List<E>>, by: (E) -> (E) -> Ordering): List<List<E>> = when (list) {
+        is List.Nil -> parted(first + mid)
+        is List.Cons ->
+            if ((first `$` by) * list.head != Ordering.GT) partition(list, by) {
+                l ->
+                parted(first + mid) `$` { if (l is List.Nil) it else plus(it, List.of(l)) }
+            }
+            else desc(list.head, list.tail, first + mid, parted, by)
+    }
+
+    internal tailrec fun <E> asc(first: E, list: List<E>, mid: (E) -> List<E>, parted: (List<E>) -> List<List<E>>, by: (E) -> (E) -> Ordering): List<List<E>> = when (list) {
+        is List.Nil -> first `$` mid `$` parted
+        is List.Cons ->
+            if ((first `$` by) * list.head == Ordering.GT) partition(list, by) {
+                l ->
+                first `$` mid `$` parted `$` { if (l is List.Nil) it else plus(it, List.of(l)) }
+            }
+            else asc(list.head, list.tail, { plus(mid(first), List.of(it)) }, parted, by)
+    }
+
+    internal fun <E> merge(by: (E) -> (E) -> Ordering): (List<List<E>>) -> List<E> = { mergeAll(Part(it), by) }
+
+    internal tailrec fun <E> mergeAll(part: Part<List<E>>, by: (E) -> (E) -> Ordering): List<E> = when (part) {
+        is Part.Empty -> List.Nil()
+        is Part.Single -> part.head
+        is Part.Multi -> mergeAll(merging(part, by) { List.Nil() } `$` Part.toPart(), by)
+    }
+
+    internal tailrec fun <E> merging(part: Part<List<E>>, by: (E) -> (E) -> Ordering, merged: () -> List<List<E>>): List<List<E>> =
+            when (part) {
+                is Part.Empty -> merged()
+                is Part.Single -> plus(merged(), part.list)
+                is Part.Multi -> merging(Part(part.list), by) {
+                    merge(part.first, part.second, by) { List.empty() } `$` { plus(merged(), List.of(it)) }
+                }
+            }
+
+    internal tailrec fun <E> merge(left: List<E>, right: List<E>, by: (E) -> (E) -> Ordering, merged: () -> List<E>): List<E> =
+            when (left) {
+                is List.Nil -> when (right) {
+                    is List.Nil -> merged()
+                    is List.Cons -> plus(merged(), right)
+                }
+                is List.Cons -> when (right) {
+                    is List.Nil -> plus(merged(), left)
+                    is List.Cons -> merge(
+                            if ((left.head `$` by) * right.head == Ordering.GT) left else left.tail,
+                            if ((left.head `$` by) * right.head == Ordering.GT) right.tail else right,
+                            by,
+                            if ((left.head `$` by) * right.head == Ordering.GT) ({ plus(merged(), List.of(right.head)) })
+                            else ({ plus(merged(), List.of(left.head)) })
+                    )
+                }
+            }
+}
+
+internal sealed class Part<E> {
+
+    abstract val list: List<E>
+
+    class Empty<E>(override val list: List.Nil<E>) : Part<E>()
+    class Single<E>(val head: E, val tail: List<E>, override val list: List<E>) : Part<E>()
+    class Multi<E>(val first: E, val second: E, override val list: List<E>) : Part<E>()
+
+    companion object {
+        operator fun <E> invoke(list: List<E>): Part<E> = when (list) {
+            is List.Nil -> Empty(list)
+            is List.Cons -> list.tail `$` {
+                when (it) {
+                    is List.Nil -> Single(list.head, list.tail, list)
+                    is List.Cons -> Multi(list.head, it.head, it.tail)
+                }
+            }
+        }
+
+        fun <E> toPart(): (List<E>) -> Part<E> = this::invoke
     }
 }
 

@@ -98,4 +98,10 @@ class ListTest :
     @Test override fun `eta _ traverse f = traverse (eta _ f)`(): Unit = List.of(*randomInts()).toPair() *
             (`eta _ traverse f`<Int>() to `traverse (eta _ f)`<Int>()) `$`
             Maybe.eq(e).test { it.first shouldEqualTo it.second }
+
+    @Test fun mergeSort() = randomInts().toPair() *
+            { List.of(*it) } *
+            ({ a: Array<Int> -> a.sorted().toTypedArray() `$` { List.of(*it) } } to
+                    { l: List<Int> -> ListFunctions.sort(l, IntInstance.ord.compare) }) `$`
+            e.test { it.first shouldEqualTo it.second }
 }

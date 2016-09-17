@@ -42,6 +42,11 @@ interface Ord<T> : _1<Ord.Å, T> {
     @MinimumDefinition(Implementation.MUST)
     fun compare(x: T, y: T): Ordering
 
+    /**
+     * function version of [compare]
+     */
+    val compare: (T) -> (T) -> Ordering get() = { x -> { y -> compare(x, y) } }
+
     val asEq: Eq<T> get() = object : Eq<T> {
         override fun eq(x: T, y: T): Bool =
                 (compare(x, y) == Ordering.EQ)

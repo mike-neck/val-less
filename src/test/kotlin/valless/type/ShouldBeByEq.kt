@@ -23,8 +23,8 @@ class ShouldBeByEq<T>(val e: Eq<T>) {
     fun <P> test(obj: P, assertion: ShouldBeByEq<T>.(P) -> Unit): Unit = assertion(this, obj)
 
     infix fun T.shouldEqualTo(other: T): Unit = """
-Expected : $other
-Actual   : $this
+Expected : $this
+Actual   : $other
 """ to e.eq(this, other) `$` { if (it.second.raw == false) throw AssertionError(it.first) }
 }
 
