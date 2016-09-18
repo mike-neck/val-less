@@ -42,22 +42,34 @@ class ListSort {
 
     val sm: Monad<_1<_1<StateT.Companion, Long>, Identity.Companion>> = State.monad()
 
-    tailrec fun iterateSort(listSize: Int = 10000, times: Int = 5, results: () -> List<Long> = { List.empty() }): List<Long> =
+    tailrec fun iterate(listSize: Int = 100000, times: Int = 5, results: () -> List<Long> = { List.empty() }, sort: (Int) -> Unit): List<Long> =
             when (times == 0) {
                 true -> results()
-                false -> iterateSort(listSize, times - 1) {
-                    sm.bind(State.get<Long>()) { sm.pure(runSort(listSize)) } `$`
+                false -> iterate(listSize = listSize, times = times - 1, sort = sort, results = {
+                    sm.bind(State.get<Long>()) { sm.pure(sort(listSize)) } `$`
                             { sm.bind(it) { State.modify<Long> { System.nanoTime() - it } } } `$`
                             { it.up.up.narrow.execState(System.nanoTime()) } `$`
                             { ListFunctions.plus(results(), List.of(it)) }
-                }
+                })
             }
 
-    fun runSort(size: Int): Unit = randomInts(size) `$` toList() `$` List.sort(IntInstance.ord) `$` asUnit
+    val runSort: (Int) -> Unit = { randomInts(it) `$` toList() `$` List.sort(IntInstance.ord) `$` asUnit }
+
+    val runSortKotlinList: (Int) -> Unit = { randomIntsList(it).sorted() }
 
     val lt: Traversable<List.Companion> = List.traversable
 
     @Test fun benchmarkOfSortingList() =
-            (iterateSort() `$` lt.for_<Long, Unit, Maybe.Companion>(Maybe.monad)) *
+            (iterate(sort = runSort) `$` lt.for_<Long, Unit, Maybe.Companion>(Maybe.monad)) *
+                    { Maybe.Just(println(it)) } `$` asUnit
+
+    fun randomIntsList(size: Int): kotlin.collections.List<Int> = when (size) {
+        0 -> emptyList()
+        else -> (1..size).map { r.nextInt() }
+    }
+
+    @Test fun sortingKotlinList() =
+            (iterate(sort = runSortKotlinList) `$`
+                    lt.for_<Long, Unit, Maybe.Companion>(Maybe.monad)) *
                     { Maybe.Just(println(it)) } `$` asUnit
 }
