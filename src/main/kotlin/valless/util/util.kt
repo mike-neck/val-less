@@ -49,6 +49,13 @@ infix fun <T> T?.unit(f: (T) -> Unit): Unit { if (this != null) f(this) }
 val Any?.unit: Unit get() { @Suppress("UNUSED_EXPRESSION")this; Unit }
 
 /**
+ * Avoiding compiler warning.
+ *
+ * This property returns function which takes [Any] and returns [Unit] without doing anything.
+ */
+val asUnit: (Any) -> Unit get() = { }
+
+/**
  * Initializer.
  * 
  * This function initializes the receiver by a given function, then returns the receiver.

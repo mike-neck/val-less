@@ -65,6 +65,10 @@ sealed class List<E> : Iterable<E>, _1<List.Companion, E> {
 
         fun <E> filter(list: List<E>, pred: (E) -> Bool): List<E> = ListFunctions.filter(list, pred)
 
+        fun <E> sort(ord: Ord<E>): (List<E>) -> List<E> = { sort(ord, it) }
+
+        fun <E> sortBy(by: (E) -> (E) -> Ordering): (List<E>) -> List<E> = { sort(it, by) }
+
         fun <E> sort(ord: Ord<E>, list: List<E>): List<E> = sort(list, ord.compare)
 
         fun <E> sort(list: List<E>, by: (E) -> (E) -> Ordering): List<E> = when (list) {
@@ -157,9 +161,11 @@ sealed class List<E> : Iterable<E>, _1<List.Companion, E> {
 
 object ListFunctions {
 
-    tailrec fun <E> create(value: kotlin.collections.List<E>, gen: (List<E>) -> List<E> = { it }): List<E> = when (value.size) {
-        0 -> gen(List.Nil())
-        else -> create(value.drop(1)) { l -> List.Cons(value[0], l) `$` gen }
+    fun <E> create(values: kotlin.collections.List<E>): List<E> = createRecursive(values)
+
+    tailrec fun <E> createRecursive(values: kotlin.collections.List<E>, index: Int = 0, size: Int = values.size, gen: List<E> = List.Nil()): List<E> = when (index == size) {
+        true -> reverse(gen)
+        false -> createRecursive(values, index + 1, size, values[index] + gen)
     }
 
     tailrec fun <E> eq(e: Eq<E>, xs: List<E>, ys: List<E>): Bool = when (xs) {
@@ -254,39 +260,54 @@ object ListFunctions {
     }
 
     fun <E> sort(list: List<E>, by: (E) -> (E) -> Ordering): List<E> =
-            partition(list, by, defaultParted()) `$` merge(by)
+            recursivePartition(Partition.Builder(Part(list)).build(List.empty()), by) `$` merge(by)
 
-    internal fun <E> defaultParted(): (List<E>) -> List<List<E>> = { if (it is List.Nil) List.empty() else List.of(it) }
-
-    internal fun <E> partition(list: List<E>, by: (E) -> (E) -> Ordering, parted: (List<E>) -> List<List<E>>): List<List<E>> =
-            Part(list) `$` {
-                when (it) {
-                    is Part.Empty -> parted(it.list)
-                    is Part.Single -> parted(it.list)
-                    is Part.Multi ->
-                        if ((it.first `$` by) * it.second == Ordering.GT) desc(it.second, it.list, List.of(it.first), parted, by)
-                        else asc(it.second, it.list, { e -> List.Cons(it.first, List.of(e)) }, parted, by)
-                }
+    internal tailrec fun <E> recursivePartition(part: Partition<E, List<List<E>>>, by: (E) -> (E) -> Ordering): List<List<E>> =
+            when (part) {
+                is Partition.Finished -> reverse(part.result)
+                is Partition.Soon -> reverse(part.list + part.result)
+                is Partition.Building ->
+                    if ((part.first `$` by) * part.second == Ordering.GT) recursivePartition(recursiveDesc(part.second, part.list, List.of(part.first), part.result, by), by)
+                    else recursivePartition(recursiveAsc(part.second, part.list, List.of(part.first), part.result, by), by)
             }
 
-    internal tailrec fun <E> desc(first: E, list: List<E>, mid: List<E>, parted: (List<E>) -> List<List<E>>, by: (E) -> (E) -> Ordering): List<List<E>> = when (list) {
-        is List.Nil -> parted(first + mid)
+    internal tailrec fun <E> recursiveDesc(first: E, list: List<E>, mid: List<E>, parted: List<List<E>>, by: (E) -> (E) -> Ordering): Partition<E, List<List<E>>> =
+            when (list) {
+                is List.Nil -> Partition.Finished(list, reverse(first + mid + parted))
+                is List.Cons ->
+                    if ((first `$` by) * list.head != Ordering.GT) Partition.Builder(Part(list)).build(first + mid + parted)
+                    else recursiveDesc(list.head, list.tail, first + mid, parted, by)
+            }
+
+    internal tailrec fun <E> recursiveAsc(first: E, list: List<E>, mid: List<E>, parted: List<List<E>>, by: (E) -> (E) -> Ordering): Partition<E, List<List<E>>> =
+            when (list) {
+                is List.Nil -> Partition.Finished(list, reverse(reverse(first + mid) + parted))
+                is List.Cons ->
+                    if ((first `$` by) * list.head == Ordering.GT) Partition.Builder(Part(list)).build(reverse(first + mid) + parted)
+                    else recursiveAsc(list.head, list.tail, first + mid, parted, by)
+            }
+
+    internal fun <E> partition(part: Part<E>, by: (E) -> (E) -> Ordering, parted: List<List<E>> = List.empty()): List<List<E>> =
+            when (part) {
+                is Part.Empty -> reverse(parted)
+                is Part.Single -> reverse(part.list + parted)
+                is Part.Multi ->
+                    if ((part.first `$` by) * part.second == Ordering.GT) desc(part.second, part.list, List.of(part.first), parted, by)
+                    else asc(part.second, part.list, List.of(part.first), parted, by)
+            }
+
+    internal tailrec fun <E> desc(first: E, list: List<E>, mid: List<E>, parted: List<List<E>>, by: (E) -> (E) -> Ordering): List<List<E>> = when (list) {
+        is List.Nil -> reverse((first + mid) + parted)
         is List.Cons ->
-            if ((first `$` by) * list.head != Ordering.GT) partition(list, by) {
-                l ->
-                parted(first + mid) `$` { if (l is List.Nil) it else plus(it, List.of(l)) }
-            }
+            if ((first `$` by) * list.head != Ordering.GT) partition(Part(list), by, (first + mid) + parted)
             else desc(list.head, list.tail, first + mid, parted, by)
     }
 
-    internal tailrec fun <E> asc(first: E, list: List<E>, mid: (E) -> List<E>, parted: (List<E>) -> List<List<E>>, by: (E) -> (E) -> Ordering): List<List<E>> = when (list) {
-        is List.Nil -> first `$` mid `$` parted
+    internal tailrec fun <E> asc(first: E, list: List<E>, mid: List<E>, parted: List<List<E>>, by: (E) -> (E) -> Ordering): List<List<E>> = when (list) {
+        is List.Nil -> reverse(reverse(first + mid) + parted)
         is List.Cons ->
-            if ((first `$` by) * list.head == Ordering.GT) partition(list, by) {
-                l ->
-                first `$` mid `$` parted `$` { if (l is List.Nil) it else plus(it, List.of(l)) }
-            }
-            else asc(list.head, list.tail, { plus(mid(first), List.of(it)) }, parted, by)
+            if ((first `$` by) * list.head == Ordering.GT) partition(Part(list), by, reverse(first + mid) + parted)
+            else asc(list.head, list.tail, first + mid, parted, by)
     }
 
     internal fun <E> merge(by: (E) -> (E) -> Ordering): (List<List<E>>) -> List<E> = { mergeAll(Part(it), by) }
@@ -345,6 +366,25 @@ internal sealed class Part<E> {
         }
 
         fun <E> toPart(): (List<E>) -> Part<E> = this::invoke
+    }
+}
+
+internal sealed class Partition<E, out R> {
+
+    abstract val list: List<E>
+
+    abstract val result: R
+
+    class Finished<E, out R>(override val list: List<E>, override val result: R) : Partition<E, R>()
+    class Soon<E, out R>(val head: E, override val list: List<E>, override val result: R) : Partition<E, R>()
+    class Building<E, out R>(val first: E, val second: E, override val list: List<E>, override val result: R) : Partition<E, R>()
+
+    class Builder<E>(val part: Part<E>) {
+        fun <R> build(result: R): Partition<E, R> = when (part) {
+            is Part.Empty -> Finished(part.list, result)
+            is Part.Single -> Soon(part.head, part.list, result)
+            is Part.Multi -> Building(part.first, part.second, part.list, result)
+        }
     }
 }
 

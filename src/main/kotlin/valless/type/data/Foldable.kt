@@ -216,4 +216,9 @@ interface Foldable<F> {
             foldr(ta, a.empty(), a.`_+_`())
 
     fun <P, M> msum(m: MonadPlus<M>, ta: _1<F, _1<M, P>>): _1<M, P> = asum(m, ta)
+
+    fun <P, R, M> for_(a: Applicative<M>, ta: _1<F, P>, f: (P) -> _1<M, R>): _1<M, Unit> =
+            foldr(ta, a.pure(Unit)) { p: P -> { u: _1<M, Unit> -> a.takeRight(f(p), u) } }
+
+    fun <P, R, M> for_(a: Applicative<M>): (_1<F, P>) -> ((P) -> _1<M, R>) -> _1<M, Unit> = { p -> { f -> for_(a, p, f) } }
 }
