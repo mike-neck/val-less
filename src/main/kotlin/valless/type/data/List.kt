@@ -315,32 +315,31 @@ object ListFunctions {
     internal tailrec fun <E> mergeAll(part: Part<List<E>>, by: (E) -> (E) -> Ordering): List<E> = when (part) {
         is Part.Empty -> List.Nil()
         is Part.Single -> part.head
-        is Part.Multi -> mergeAll(merging(part, by) { List.Nil() } `$` Part.toPart(), by)
+        is Part.Multi -> mergeAll(merging(part, by, List.Nil()) `$` Part.toPart(), by)
     }
 
-    internal tailrec fun <E> merging(part: Part<List<E>>, by: (E) -> (E) -> Ordering, merged: () -> List<List<E>>): List<List<E>> =
+    internal tailrec fun <E> merging(part: Part<List<E>>, by: (E) -> (E) -> Ordering, merged: List<List<E>>): List<List<E>> =
             when (part) {
-                is Part.Empty -> merged()
-                is Part.Single -> plus(merged(), part.list)
-                is Part.Multi -> merging(Part(part.list), by) {
-                    merge(part.first, part.second, by) { List.empty() } `$` { plus(merged(), List.of(it)) }
-                }
+                is Part.Empty -> merged
+                is Part.Single -> plus(merged, part.list)
+                is Part.Multi -> merging(Part(part.list), by,
+                        merge(part.first, part.second, by, List.empty()) `$` { plus(merged, List.of(it)) })
             }
 
-    internal tailrec fun <E> merge(left: List<E>, right: List<E>, by: (E) -> (E) -> Ordering, merged: () -> List<E>): List<E> =
+    internal tailrec fun <E> merge(left: List<E>, right: List<E>, by: (E) -> (E) -> Ordering, merged: List<E>): List<E> =
             when (left) {
                 is List.Nil -> when (right) {
-                    is List.Nil -> merged()
-                    is List.Cons -> plus(merged(), right)
+                    is List.Nil -> merged
+                    is List.Cons -> plus(merged, right)
                 }
                 is List.Cons -> when (right) {
-                    is List.Nil -> plus(merged(), left)
+                    is List.Nil -> plus(merged, left)
                     is List.Cons -> merge(
                             if ((left.head `$` by) * right.head == Ordering.GT) left else left.tail,
                             if ((left.head `$` by) * right.head == Ordering.GT) right.tail else right,
                             by,
-                            if ((left.head `$` by) * right.head == Ordering.GT) ({ plus(merged(), List.of(right.head)) })
-                            else ({ plus(merged(), List.of(left.head)) })
+                            if ((left.head `$` by) * right.head == Ordering.GT) plus(merged, List.of(right.head))
+                            else plus(merged, List.of(left.head))
                     )
                 }
             }
