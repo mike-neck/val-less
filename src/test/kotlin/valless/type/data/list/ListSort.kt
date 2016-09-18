@@ -27,7 +27,6 @@ import valless.type.data.functor.Identity
 import valless.type.up
 import valless.util.asUnit
 import valless.util.function.`$`
-import valless.util.function.id
 import valless.util.function.times
 import java.util.*
 
@@ -61,24 +60,4 @@ class ListSort {
     @Test fun benchmarkOfSortingList() =
             (iterateSort() `$` lt.for_<Long, Unit, Maybe.Companion>(Maybe.monad)) *
                     { Maybe.Just(println(it)) } `$` asUnit
-
-    tailrec fun sum(num: Int, result: (Int) -> Int = id()): Int = when (num) {
-        0 -> result(0)
-        else -> sum(num - 1) { result(it + num) }
-    }
-
-    @Test fun calcSum() = sum(100000) `$` ::println
-
-    tailrec fun divideNum(num: List<Int>, odd: List<Int>, even: List<Int>): Pair<List<Int>, List<Int>> =
-            when (num) {
-                is List.Nil -> ListFunctions.reverse(odd) to ListFunctions.reverse(even)
-                is List.Cons -> when (num.head % 2) {
-                    0 -> divideNum(num.tail, odd, num.head + even)
-                    else -> divideNum(num.tail, num.head + odd, even)
-                }
-            }
-}
-
-data class Results(val start: Long, val finished: List<Long> = List.empty()) {
-    fun finish(): List<Long> = System.nanoTime() `$` { it - start } `$` { it + finished }
 }
