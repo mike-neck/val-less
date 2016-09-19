@@ -19,6 +19,9 @@ import org.junit.Test
 import valless.type._1
 import valless.type.data.functor.Identity
 import valless.type.data.functor.Identity.Companion.narrow
+import valless.type.data.list.Dual
+import valless.type.data.list.ListFunctions
+import valless.type.data.list.PartD
 import valless.type.data.monoid.Monoid
 import valless.type.test
 import valless.util.function.`$`
@@ -98,6 +101,26 @@ class ListTest :
     @Test override fun `eta _ traverse f = traverse (eta _ f)`(): Unit = List.of(*randomInts()).toPair() *
             (`eta _ traverse f`<Int>() to `traverse (eta _ f)`<Int>()) `$`
             Maybe.eq(e).test { it.first shouldEqualTo it.second }
+
+    val io: Ord<Int> = IntInstance.ord
+
+    private val partition: (List<Int>) -> (Dual<Dual<Int>>) =
+            { ListFunctions.partition(PartD(Dual.fromList(it)).toPartition(Dual.empty()), io.compare) }
+
+    val array = arrayOf(50, 30, 20, 70, 90, 60, 10, 0, 80, 40, 100)
+
+    @Test fun partition() = (1..array.size).map { IntRange(0, it - 1) }
+            .map { array.sliceArray(it) }
+            .map { List.of(*it).toPair() }
+            .map { it * partition * (List<Int>::toString to Dual<Dual<Int>>::toString) }
+            .map { "${it.first} -> ${it.second}" }
+            .forEach(::println)
+
+    @Test fun sortShortCase() = arrayOf(50, 30, 20, 70, 90, 60, 10, 0, 80, 40, 100).toPair() *
+            { List.of(*it) } *
+            ({ a: Array<Int> -> a.sorted().toTypedArray() `$` { List.of(*it) } } to
+                    { l: List<Int> -> List.sort(IntInstance.ord, l) }) `$`
+            e.test { it.first shouldEqualTo it.second }
 
     @Test fun mergeSort() = randomInts().toPair() *
             { List.of(*it) } *
