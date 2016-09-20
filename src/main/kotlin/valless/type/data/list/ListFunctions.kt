@@ -168,10 +168,16 @@ object ListFunctions {
             }
 
     internal class MergeArg<E>(val left: Dual<E>, val right: Dual<E>, val merged: Dual<E>, val by: (E) -> (E) -> Ordering) {
+        val leftValue: E get() = (left as DualImpl).first.value
+        val rightValue: E get() = (right as DualImpl).first.value
+
         fun mergeRightNext(): MergeArg<E> = ((right as DualImpl<E>).first to right.drop(1)) `$` { MergeArg(left, it.second, merged.append(it.first.value), by) }
         fun mergeLeftNext(): MergeArg<E> = ((left as DualImpl<E>).first to left.drop(1)) `$` { MergeArg(it.second, right, merged.append(it.first.value), by) }
 
-        fun next(): MergeArg<E> = if (((left as DualImpl).first.value `$` by) * (right as DualImpl).first.value == Ordering.GT) mergeRightNext() else mergeLeftNext()
+        fun next(): MergeArg<E> = if ((leftValue `$` by) * rightValue == Ordering.GT) mergeRightNext() else mergeLeftNext()
+
+        override fun toString(): String =
+                "Arg left: $left right: $right merged: $merged"
     }
 }
 

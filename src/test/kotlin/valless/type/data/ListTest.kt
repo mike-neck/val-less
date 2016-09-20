@@ -109,13 +109,6 @@ class ListTest :
 
     val array = arrayOf(50, 30, 20, 70, 90, 60, 10, 0, 80, 40, 100)
 
-    @Test fun partition() = (1..array.size).map { IntRange(0, it - 1) }
-            .map { array.sliceArray(it) }
-            .map { List.of(*it).toPair() }
-            .map { it * partition * (List<Int>::toString to Dual<Dual<Int>>::toString) }
-            .map { "${it.first} -> ${it.second}" }
-            .forEach(::println)
-
     @Test fun sortShortCase() = arrayOf(50, 30, 20, 70, 90, 60, 10, 0, 80, 40, 100).toPair() *
             { List.of(*it) } *
             ({ a: Array<Int> -> a.sorted().toTypedArray() `$` { List.of(*it) } } to
