@@ -46,20 +46,28 @@ internal sealed class MutableList<E> : Iterable<E> {
             override fun hasNext(): Boolean = false
             override fun next(): E = throw UnsupportedOperationException()
         }
+
+        override fun toString(): String = joinToString(", ", "[", "]")
     }
 
     class Boxed<E>(var head: Link.Item<E>, var last: Link.Item<E>,
                    override var size: Int = 1, var direction: Direction = Direction.ASC) : MutableList<E>() {
 
-        val firstItem: Link.Item<E> = if (direction == Direction.ASC) head else last
+        val firstItem: Link.Item<E> get() = if (direction == Direction.ASC) head else last
 
-        val first: E = firstItem.item
+        val first: E get() = firstItem.item
 
-        val lastItem: Link.Item<E> = if (direction == Direction.DESC) last else head
+        val secondItem: Link.Item<E> get() =
+        if (size <= 1) throw IllegalStateException("The size of this list is $size.[$this]")
+        else (if (direction == Direction.ASC) head.post else last.pre) as Link.Item<E>
 
-        val end: E = lastItem.item
+        val second: E get() = secondItem.item
 
-        override fun toList(): List<E> = constructList(List.empty(), lastItem, direction.next())
+        val lastItem: Link.Item<E> get() = if (direction == Direction.ASC) last else head
+
+        val end: E get() = lastItem.item
+
+        override fun toList(): List<E> = constructList(List.empty(), lastItem, direction.reverse.next())
 
         private tailrec fun constructList(list: List<E>, current: Link<E>, next: (Link.Item<E>) -> Link<E>): List<E> = when (current) {
             is Link.Term -> list
@@ -91,27 +99,31 @@ internal sealed class MutableList<E> : Iterable<E> {
 
         override fun dropInternal(count: Int): MutableList<E> = when (count <= size) {
             false -> throw IllegalArgumentException()
-            true -> when (direction) {
-                Direction.ASC -> dropping(count, head)
-                        .initBy { this.head = it.first }
-                        .initBy { this.size = it.second }
-                        .let { this }
-                Direction.DESC -> dropping(count, last)
-                        .initBy { this.last = it.first }
-                        .initBy { this.size = it.second }
-                        .let { this }
-            }
+            true ->
+                if (count == size) Empty()
+                else when (direction) {
+                    Direction.ASC -> dropping(count, head)
+                            .initBy { this.head = it.first }
+                            .initBy { this.size = it.second }
+                            .initBy { it.first.pre = Link.term() }
+                            .let { this }
+                    Direction.DESC -> dropping(count, last)
+                            .initBy { this.last = it.first }
+                            .initBy { this.size = it.second }
+                            .initBy { it.first.post = Link.term() }
+                            .let { this }
+                }
         }
 
         private tailrec fun dropping(count: Int, current: Link.Item<E>, size: Int = this.size, next: (Link.Item<E>) -> Link<E> = this.direction.next()): Pair<Link.Item<E>, Int> = when (count) {
             0 -> current to size
-            else -> dropping(count - 1, getNext(current, next), size - 1, next)
+            else -> dropping(count - 1, getNext(current, next, count, size), size - 1, next)
         }
 
-        private fun getNext(current: Link.Item<E>, next: (Link.Item<E>) -> Link<E>): Link.Item<E> =
+        private fun getNext(current: Link.Item<E>, next: (Link.Item<E>) -> Link<E>, count: Int, size: Int): Link.Item<E> =
                 next(current) `$` {
                     when (it) {
-                        is Link.Term -> throw IllegalArgumentException("count exceeds size.")
+                        is Link.Term -> throw IllegalArgumentException("count exceeds size.[count: $count, size: $size][$this]")
                         is Link.Item -> it
                     }
                 }
@@ -127,6 +139,8 @@ internal sealed class MutableList<E> : Iterable<E> {
                 }
             }
         }
+
+        override fun toString(): String = joinToString(", ", "[", "]")
     }
 
     companion object {

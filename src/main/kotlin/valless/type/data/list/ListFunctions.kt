@@ -107,77 +107,75 @@ object ListFunctions {
         Bool.False -> filtered
     }
 
-    fun <E> sort(list: List<E>, by: (E) -> (E) -> Ordering): List<E> =
-            partition(PartD(Dual.fromList(list)).toPartition(Dual.empty()), by) `$` merge(by)
+    fun <E> sort(list: List<E>, by: (E) -> (E) -> Ordering): List<E> = partition(Partition(list), by) `$` merge(by)
 
-    internal tailrec fun <E> partition(part: PartitionD<E, Dual<Dual<E>>>, by: (E) -> (E) -> Ordering): Dual<Dual<E>> =
-            when (part) {
-                is PartitionD.Finished -> part.result.reverse()
-                is PartitionD.Soon -> (part.result.append(Dual.of(part.head))).reverse()
-                is PartitionD.Building ->
-                    if ((part.first `$` by) * part.second == Ordering.GT) partition(desc(part.second, part.list, Dual.of(part.first), part.result, by), by)
-                    else partition(asc(part.second, part.list, Dual.of(part.first), part.result, by), by)
+    internal fun <E> merge(by: (E) -> (E) -> Ordering): (MutableList<MutableList<E>>) -> List<E> = { mergeAll(it, by) }
+
+    internal tailrec fun <E> partition(partition: Partition<E>, by: (E) -> (E) -> Ordering): MutableList<MutableList<E>> =
+            when (partition) {
+                is Partition.Finished -> partition.result
+                is Partition.Almost -> partition.result.append(MutableList.singleton(partition.head))
+                is Partition.Building ->
+                    if ((partition.first `$` by) * partition.second == Ordering.GT) partition(desc(partition.second, partition.list, MutableList.singleton(partition.first), partition.result, by), by)
+                    else partition(asc(partition.second, partition.list, MutableList.singleton(partition.first), partition.result, by), by)
             }
 
-    internal tailrec fun <E> desc(first: E, list: Dual<E>, mid: Dual<E>, parted: Dual<Dual<E>>, by: (E) -> (E) -> Ordering): PartitionD<E, Dual<Dual<E>>> =
+
+    internal tailrec fun <E> desc(first: E, list: List<E>, mid: MutableList<E>, result: MutableList<MutableList<E>>, by: (E) -> (E) -> Ordering): Partition<E> =
             when (list) {
-                is EmptyDual -> PartitionD.Finished(list, parted.append(mid.append(first)))
-                is DualImpl ->
-                    if ((first `$` by) * list.first.value != Ordering.GT) PartD(list).toPartition(parted.append(mid.append(first)))
-                    else desc(list.first.value, list.drop(1), mid.append(first), parted, by)
-                else -> throw IllegalStateException()
+                is List.Nil -> Partition(list, result.append(mid.append(first).reverse()))
+                is List.Cons ->
+                    if ((first `$` by) * list.head != Ordering.GT) Partition(list, result.append(mid.append(first).reverse()))
+                    else desc(list.head, list.tail, mid.append(first), result, by)
             }
 
-    internal tailrec fun <E> asc(first: E, list: Dual<E>, mid: Dual<E>, parted: Dual<Dual<E>>, by: (E) -> (E) -> Ordering): PartitionD<E, Dual<Dual<E>>> =
+    internal tailrec fun <E> asc(first: E, list: List<E>, mid: MutableList<E>, result: MutableList<MutableList<E>>, by: (E) -> (E) -> Ordering): Partition<E> =
             when (list) {
-                is EmptyDual -> PartitionD.Finished(list, parted.append(mid.append(first).reverse()))
-                is DualImpl ->
-                    if ((first `$` by) * list.first.value == Ordering.GT) PartD(list).toPartition(parted.append(mid.append(first).reverse()))
-                    else asc(list.first.value, list.drop(1), mid.append(first), parted, by)
-                else -> throw IllegalStateException()
+                is List.Nil -> Partition(list, result.append(mid.append(first)))
+                is List.Cons ->
+                    if ((first `$` by) * list.head == Ordering.GT) Partition(list, result.append(mid.append(first)))
+                    else asc(list.head, list.tail, mid.append(first), result, by)
             }
 
-    internal fun <E> merge(by: (E) -> (E) -> Ordering): (Dual<Dual<E>>) -> List<E> = { mergeAll(PartD(it), by) }
-
-    internal tailrec fun <E> mergeAll(part: PartD<Dual<E>>, by: (E) -> (E) -> Ordering): List<E> = when (part) {
-        is PartD.Empty -> List.Nil()
-        is PartD.Single -> part.head.toList()
-        is PartD.Multi -> mergeAll(PartD(merging(part, by, Dual.empty())), by)
-    }
-
-    internal tailrec fun <E> merging(part: PartD<Dual<E>>, by: (E) -> (E) -> Ordering, merged: Dual<Dual<E>>): Dual<Dual<E>> =
-            when (part) {
-                is PartD.Empty -> merged
-                is PartD.Single -> merged + part.list
-                is PartD.Multi -> merging(PartD(part.list), by, merged.append(merge(MergeArg(part.first, part.second, Dual.empty(), by))))
+    internal tailrec fun <E> mergeAll(list: MutableList<MutableList<E>>, by: (E) -> (E) -> Ordering): List<E> =
+            when (list) {
+                is MutableList.Empty -> List.Nil()
+                is MutableList.Boxed ->
+                    if (list.size == 1) list.first.toList()
+                    else mergeAll(merging(list, by), by)
             }
 
-    internal tailrec fun <E> merge(arg: MergeArg<E>): Dual<E> =
+    internal fun <E> merging(list: MutableList<MutableList<E>>, by: (E) -> (E) -> Ordering, merged: MutableList<MutableList<E>> = MutableList.empty()): MutableList<MutableList<E>> =
+            merging(merged, list, by)
+
+    internal tailrec fun <E> merging(merged: MutableList<MutableList<E>>, list: MutableList<MutableList<E>>, by: (E) -> (E) -> Ordering): MutableList<MutableList<E>> =
+            when (list) {
+                is MutableList.Empty -> merged
+                is MutableList.Boxed ->
+                    if (list.size == 1) merged.append(list.first)
+                    else merging(merged.append(merge(list.first, list.second, by)), list.drop(2), by)
+            }
+
+    internal fun <E> merge(left: MutableList<E>, right: MutableList<E>, by: (E) -> (E) -> Ordering, merged: MutableList<E> = MutableList.empty()): MutableList<E> =
+            merge(MergeList(left, right, merged, by))
+
+    internal tailrec fun <E> merge(arg: MergeList<E>): MutableList<E> =
             when (arg.left) {
-                is EmptyDual -> when (arg.right) {
-                    is EmptyDual -> arg.merged
-                    is DualImpl -> arg.merged + arg.right
-                    else -> throw IllegalStateException()
+                is MutableList.Empty -> when (arg.right) {
+                    is MutableList.Empty -> arg.merged
+                    is MutableList.Boxed -> arg.merged + arg.right
                 }
-                is DualImpl -> when (arg.right) {
-                    is EmptyDual -> arg.merged + arg.left
-                    is DualImpl -> merge(arg.next())
-                    else -> throw IllegalStateException()
+                is MutableList.Boxed -> when (arg.right) {
+                    is MutableList.Empty -> arg.merged + arg.left
+                    is MutableList.Boxed ->
+                        if ((arg.left.first `$` arg.by) * arg.right.first == Ordering.GT) merge(arg.rightMerge())
+                        else merge(arg.leftMerge())
                 }
-                else -> throw IllegalStateException()
             }
 
-    internal class MergeArg<E>(val left: Dual<E>, val right: Dual<E>, val merged: Dual<E>, val by: (E) -> (E) -> Ordering) {
-        val leftValue: E get() = (left as DualImpl).first.value
-        val rightValue: E get() = (right as DualImpl).first.value
-
-        fun mergeRightNext(): MergeArg<E> = ((right as DualImpl<E>).first to right.drop(1)) `$` { MergeArg(left, it.second, merged.append(it.first.value), by) }
-        fun mergeLeftNext(): MergeArg<E> = ((left as DualImpl<E>).first to left.drop(1)) `$` { MergeArg(it.second, right, merged.append(it.first.value), by) }
-
-        fun next(): MergeArg<E> = if ((leftValue `$` by) * rightValue == Ordering.GT) mergeRightNext() else mergeLeftNext()
-
-        override fun toString(): String =
-                "Arg left: $left right: $right merged: $merged"
+    internal class MergeList<E>(val left: MutableList<E>, val right: MutableList<E>, val merged: MutableList<E>, val by: (E) -> (E) -> Ordering) {
+        fun rightMerge(): MergeList<E> = (right as MutableList.Boxed).first `$` { MergeList(left, right.drop(1), merged.append(it), by) }
+        fun leftMerge(): MergeList<E> = (left as MutableList.Boxed).first `$` { MergeList(left.drop(1), right, merged.append(it), by) }
     }
 }
 

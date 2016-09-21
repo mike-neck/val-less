@@ -19,9 +19,6 @@ import org.junit.Test
 import valless.type._1
 import valless.type.data.functor.Identity
 import valless.type.data.functor.Identity.Companion.narrow
-import valless.type.data.list.Dual
-import valless.type.data.list.ListFunctions
-import valless.type.data.list.PartD
 import valless.type.data.monoid.Monoid
 import valless.type.test
 import valless.util.function.`$`
@@ -103,9 +100,6 @@ class ListTest :
             Maybe.eq(e).test { it.first shouldEqualTo it.second }
 
     val io: Ord<Int> = IntInstance.ord
-
-    private val partition: (List<Int>) -> (Dual<Dual<Int>>) =
-            { ListFunctions.partition(PartD(Dual.fromList(it)).toPartition(Dual.empty()), io.compare) }
 
     val array = arrayOf(50, 30, 20, 70, 90, 60, 10, 0, 80, 40, 100)
 

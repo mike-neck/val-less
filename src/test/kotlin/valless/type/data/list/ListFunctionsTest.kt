@@ -19,8 +19,6 @@ import org.junit.Test
 import valless.type.data.IntInstance
 import valless.type.data.List
 import valless.type.data.Ord
-import valless.type.data.list.ListFunctions.merge
-import valless.util.collection.comb
 import valless.util.times
 import valless.util.toPair
 
@@ -30,17 +28,17 @@ class ListFunctionsTest {
 
     val array = arrayOf(50, 30, 20, 70, 90, 60, 10, 0, 80, 40, 100)
 
-    private val partition: (List<Int>) -> (Dual<Dual<Int>>) =
-            { ListFunctions.partition(PartD(Dual.fromList(it)).toPartition(Dual.empty()), io.compare) }
-
     val kotlinSort: (Array<Int>) -> List<Int> = { a: Array<Int> -> List.of(*a.sortedArray()) }
 
     val sort: (List<Int>) -> List<Int> = List.sort(io)
 
+    private val partition: (List<Int>) -> (MutableList<MutableList<Int>>) =
+            { ListFunctions.partition(Partition(it), io.compare) }
+
     @Test fun partition() = (1..array.size).map { IntRange(0, it - 1) }
             .map { array.sliceArray(it) }
             .map { List.of(*it).toPair() }
-            .map { it * partition * (List<Int>::toString to Dual<Dual<Int>>::toString) }
+            .map { it * partition * (List<Int>::toString to MutableList<MutableList<Int>>::toString) }
             .map { "${it.first} -> ${it.second}" }
             .forEach(::println)
 
@@ -50,12 +48,4 @@ class ListFunctionsTest {
             .map { it * (kotlinSort to sort) }
             .map { "${it.first} -> ${it.second}" }
             .forEach(::println)
-
-    @Test fun merge() =
-            (listOf({ Dual.empty<Int>() }, { Dual.of(10) }, { Dual.fromList(List.of(10, 30, 70)) })
-                    comb
-                    listOf({ Dual.empty<Int>() }, { Dual.of(20) }, { Dual.fromList(List.of(0, 20, 40, 60)) }))
-                    .map { ListFunctions.MergeArg(it.first(), it.second(), Dual.empty(), io.compare) }
-                    .map { merge(it) }
-                    .forEach(::println)
 }
