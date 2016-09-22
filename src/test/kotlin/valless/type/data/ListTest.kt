@@ -103,14 +103,16 @@ class ListTest :
 
     val array = arrayOf(50, 30, 20, 70, 90, 60, 10, 0, 80, 40, 100)
 
+    val arrayToList: (Array<Int>) -> List<Int> = { List.of(*it) }
+
     @Test fun sortShortCase() = arrayOf(50, 30, 20, 70, 90, 60, 10, 0, 80, 40, 100).toPair() *
-            { List.of(*it) } *
+            arrayToList *
             ({ a: Array<Int> -> a.sorted().toTypedArray() `$` { List.of(*it) } } to
                     { l: List<Int> -> List.sort(IntInstance.ord, l) }) `$`
             e.test { it.first shouldEqualTo it.second }
 
     @Test fun mergeSort() = randomInts().toPair() *
-            { List.of(*it) } *
+            arrayToList *
             ({ a: Array<Int> -> a.sorted().toTypedArray() `$` { List.of(*it) } } to
                     { l: List<Int> -> List.sort(IntInstance.ord, l) }) `$`
             e.test { it.first shouldEqualTo it.second }
@@ -120,7 +122,7 @@ class ListTest :
     val <T> ((T) -> Boolean).bool: (T) -> Bool get() = { Eq.booleanToBool(this(it)) }
 
     @Test fun filter() = randomInts().toPair() *
-            { List.of(*it) } *
+            arrayToList *
             ({ a: Array<Int> -> a.filter(canDivBy3).toTypedArray() `$` { List.of(*it) } } to
                     { l: List<Int> -> List.filter(l, canDivBy3.bool) }) `$`
             e.test { it.first shouldEqualTo it.second }
@@ -132,10 +134,19 @@ class ListTest :
     val nub: (List<Int>) -> List<Int> = { List.nub(ie, it) }
 
     @Test fun shortNub() = arrayOf(1, 4, 7, 9, 3, 4, 7, 8, 4).toPair() *
-            { List.of(*it) } * (distinct to nub) `$`
+            arrayToList * (distinct to nub) `$`
             e.test { it.first shouldEqualTo it.second }
 
     @Test fun nub() = randomInts().toPair() *
-            { List.of(*it) } * (distinct to nub) `$`
+            arrayToList * (distinct to nub) `$`
+            e.test { it.first shouldEqualTo it.second }
+
+    val drop20: (List<Int>) -> List<Int> = { List.drop(20, it) }
+
+    val dropLessThan21: (List<Int>) -> List<Int> = { List.dropWhile(it) { Ordering.eq.eq(io.compare(it, 21), Ordering.LT) } }
+
+    @Test fun drop() = (1..100).map { it }.toTypedArray().toPair() *
+            (arrayToList to arrayToList) *
+            (drop20 to dropLessThan21) `$`
             e.test { it.first shouldEqualTo it.second }
 }

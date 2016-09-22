@@ -82,6 +82,8 @@ sealed class List<E> : Iterable<E>, _1<List.Companion, E> {
 
         fun <E> drop(num: Int, list: List<E>): List<E> = ListFunctions.drop(num, list)
 
+        fun <E> dropWhile(list: List<E>, cond: (E) -> Bool): List<E> = ListFunctions.dropWhile(list, cond)
+
         override fun <T> eq(e: Eq<T>): Eq<_1<Companion, T>> = object : Eq<_1<Companion, T>> {
             override fun eq(x: _1<Companion, T>, y: _1<Companion, T>): Bool =
                     ListFunctions.eq(e, x.narrow, y.narrow)

@@ -196,4 +196,10 @@ object ListFunctions {
             if (num == 0) list
             else drop(num - 1, list.tail)
     }
+
+    internal tailrec fun <E> dropWhile(list: List<E>, cond: (E) -> Bool): List<E> = when (list) {
+        is List.Nil -> list
+        is List.Cons ->
+            if (cond(list.head).raw) dropWhile(list.tail, cond) else list
+    }
 }
