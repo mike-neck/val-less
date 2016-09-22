@@ -164,4 +164,15 @@ class ListTest :
 
     @Test fun zip() = (randomInts() to randomInts()).toPair() * pairArrayToPairList *
             (zipByKotlin to zip) `$` lpe.test { it.first shouldEqualTo it.second }
+
+    fun IntRange.random(): Int = this.start + r.nextInt(this.endInclusive - this.start)
+
+    val replicateNormal: (Pair<Int, Int>) -> List<Int> =
+            { p -> (1..(p.first)).map { p.second }.toTypedArray() `$` arrayToList }
+
+    val replicate: (Pair<Int, Int>) -> List<Int> = { List.replicate(it.first, it.second) }
+
+    @Test fun replicate() = ((20..30).random() to randomInts(1)[0]).toPair() *
+            (replicateNormal to replicate) `$`
+            e.test { it.first shouldEqualTo it.second }
 }

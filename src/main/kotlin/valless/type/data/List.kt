@@ -84,6 +84,8 @@ sealed class List<E> : Iterable<E>, _1<List.Companion, E> {
 
         fun <E> dropWhile(list: List<E>, cond: (E) -> Bool): List<E> = ListFunctions.dropWhile(list, cond)
 
+        fun <E> replicate(num: Int, item: E): List<E> = ListFunctions.replicate(num, item)
+
         fun <P, Q> zip(left: List<P>, right: List<Q>): List<Pair<P, Q>> = ListFunctions.zip(left, right)
 
         override fun <T> eq(e: Eq<T>): Eq<_1<Companion, T>> = object : Eq<_1<Companion, T>> {
