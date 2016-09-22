@@ -84,6 +84,10 @@ sealed class List<E> : Iterable<E>, _1<List.Companion, E> {
 
         fun <E> dropWhile(list: List<E>, cond: (E) -> Bool): List<E> = ListFunctions.dropWhile(list, cond)
 
+        fun <E> delete(e: Eq<E>, obj: E, list: List<E>): List<E> = deleteBy(obj, list, e.eq)
+
+        fun <E> deleteBy(obj: E, list: List<E>, cond: (E) -> (E) -> Bool): List<E> = ListFunctions.deleteBy(obj, list, cond)
+
         fun <E> replicate(num: Int, item: E): List<E> = ListFunctions.replicate(num, item)
 
         fun <P, Q> zip(left: List<P>, right: List<Q>): List<Pair<P, Q>> = ListFunctions.zip(left, right)

@@ -203,6 +203,14 @@ object ListFunctions {
             if (cond(list.head).raw) dropWhile(list.tail, cond) else list
     }
 
+    internal tailrec fun <E> deleteBy(obj: E, list: List<E>, cond: (E) -> (E) -> Bool, built: List<E> = List.empty()): List<E> =
+            when (list) {
+                is List.Nil -> reverse(built)
+                is List.Cons ->
+                    if ((obj `$` cond) * list.head == Bool.True) plus(reverse(built), list.tail)
+                    else deleteBy(obj, list.tail, cond, list.head + built)
+            }
+
     internal tailrec fun <E> replicate(num: Int, item: E, built: List<E> = List.empty()): List<E> =
             if (num == 0) built
             else replicate(num - 1, item, item + built)
