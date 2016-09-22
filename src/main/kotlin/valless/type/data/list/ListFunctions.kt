@@ -189,4 +189,11 @@ object ListFunctions {
             if (cond(elem)(result.head).raw) Bool.True
             else elemBy(elem, result.tail, cond)
     }
+
+    internal tailrec fun <E> drop(num: Int, list: List<E>): List<E> = when (list) {
+        is List.Nil -> list
+        is List.Cons ->
+            if (num == 0) list
+            else drop(num - 1, list.tail)
+    }
 }
