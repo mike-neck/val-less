@@ -124,4 +124,18 @@ class ListTest :
             ({ a: Array<Int> -> a.filter(canDivBy3).toTypedArray() `$` { List.of(*it) } } to
                     { l: List<Int> -> List.filter(l, canDivBy3.bool) }) `$`
             e.test { it.first shouldEqualTo it.second }
+
+    val distinct: (Array<Int>) -> List<Int> = { List.of(*it.distinct().toTypedArray()) }
+
+    val ie: Eq<Int> = IntInstance.eq
+
+    val nub: (List<Int>) -> List<Int> = { List.nub(ie, it) }
+
+    @Test fun shortNub() = arrayOf(1, 4, 7, 9, 3, 4, 7, 8, 4).toPair() *
+            { List.of(*it) } * (distinct to nub) `$`
+            e.test { it.first shouldEqualTo it.second }
+
+    @Test fun nub() = randomInts().toPair() *
+            { List.of(*it) } * (distinct to nub) `$`
+            e.test { it.first shouldEqualTo it.second }
 }

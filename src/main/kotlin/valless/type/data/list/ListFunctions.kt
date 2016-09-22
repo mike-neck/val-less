@@ -175,4 +175,18 @@ object ListFunctions {
         fun rightMerge(): MergeList<E> = (right as MutableList.Boxed).first `$` { MergeList(left, right.drop(1), merged.append(it), by) }
         fun leftMerge(): MergeList<E> = (left as MutableList.Boxed).first `$` { MergeList(left.drop(1), right, merged.append(it), by) }
     }
+
+    internal tailrec fun <E> nub(list: List<E>, result: List<E> = List.empty(), cond: (E) -> (E) -> Bool): List<E> = when (list) {
+        is List.Nil -> reverse(result)
+        is List.Cons ->
+            if (elemBy(list.head, result, cond).raw) nub(list.tail, result, cond)
+            else nub(list.tail, list.head + result, cond)
+    }
+
+    internal tailrec fun <E> elemBy(elem: E, result: List<E>, cond: (E) -> (E) -> Bool): Bool = when (result) {
+        is List.Nil -> Bool.False
+        is List.Cons ->
+            if (cond(elem)(result.head).raw) Bool.True
+            else elemBy(elem, result.tail, cond)
+    }
 }

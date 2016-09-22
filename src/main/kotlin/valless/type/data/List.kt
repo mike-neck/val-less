@@ -76,6 +76,10 @@ sealed class List<E> : Iterable<E>, _1<List.Companion, E> {
             is Cons -> ListFunctions.sort(list, by)
         }
 
+        fun <E> nub(eq: Eq<E>, list: List<E>): List<E> = nubBy(list, eq.eq)
+
+        fun <E> nubBy(list: List<E>, cond: (E) -> (E) -> Bool): List<E> = ListFunctions.nub(list = list, cond = cond)
+
         override fun <T> eq(e: Eq<T>): Eq<_1<Companion, T>> = object : Eq<_1<Companion, T>> {
             override fun eq(x: _1<Companion, T>, y: _1<Companion, T>): Bool =
                     ListFunctions.eq(e, x.narrow, y.narrow)
