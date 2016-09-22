@@ -92,9 +92,35 @@ internal sealed class MutableList<E> : Iterable<E> {
             is Boxed -> direction.concatenate(this, other)
         }
 
-        internal tailrec fun swap(link: Link<E> = head, currentHead: Link.Item<E> = head, currentLast: Link.Item<E> = last): Unit = when (link) {
+        internal tailrec fun swap(link: Link<E> = if (direction == Direction.ASC) head else last, currentHead: Link.Item<E> = head, currentLast: Link.Item<E> = last): Unit = when (link) {
             is Link.Term -> Unit.initBy { head = currentLast }.initBy { last = currentHead }
-            is Link.Item -> swap(link.swap())
+            is Link.Item -> swap(link.swap(direction))
+//            is Link.Item -> swap(capture(link))
+        }
+
+        internal fun capture(link: Link.Item<E>): Link<E> =
+                (link.initBy { showSide(it, "before swap") } `$`
+                        { it.swap(direction) })
+                        .initBy { showSide(it, "after swap") }
+
+        internal fun showSide(link: Link<E>, head: String): Unit = when (link) {
+            is Link.Term -> println("$head : ???? - Term - ????")
+            is Link.Item -> link.pre `$` { pre ->
+                when (pre) {
+                    is Link.Term -> link.post `$` { post ->
+                        when (post) {
+                            is Link.Term -> println("$head : Term - [${link.item}] - Term")
+                            is Link.Item -> println("$head : Term - [${link.item}] - [${post.item}]")
+                        }
+                    }
+                    is Link.Item -> link.post `$` { post ->
+                        when (post) {
+                            is Link.Term -> println("$head : [${pre.item}] - [${link.item}] - Term")
+                            is Link.Item -> println("$head : [${pre.item}] - [${link.item}] - [${post.item}]")
+                        }
+                    }
+                }
+            }
         }
 
         override fun dropInternal(count: Int): MutableList<E> = when (count <= size) {
@@ -164,7 +190,9 @@ internal sealed class MutableList<E> : Iterable<E> {
     sealed class Link<E> {
         object Term : Link<Any>()
         class Item<E>(val item: E, var pre: Link<E>, var post: Link<E>) : Link<E>() {
-            fun swap(): Link<E> = pre.initBy { pre = post }.initBy { post = it }
+            fun swap(direction: Direction): Link<E> =
+                    if (direction == Direction.ASC) post.initBy { post = pre }.initBy { pre = it }
+                    else pre.initBy { pre = post }.initBy { post = it }
         }
 
         companion object {
