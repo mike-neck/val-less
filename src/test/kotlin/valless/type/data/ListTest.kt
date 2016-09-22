@@ -149,4 +149,19 @@ class ListTest :
             (arrayToList to arrayToList) *
             (drop20 to dropLessThan21) `$`
             e.test { it.first shouldEqualTo it.second }
+
+    val zipByKotlin: (Pair<Array<Int>, Array<Int>>) -> List<Pair<Int, Int>> =
+            { it.first.zip(it.second).toTypedArray() `$` { List.of(*it) } }
+
+    val zip: (Pair<List<Int>, List<Int>>) -> List<Pair<Int, Int>> = { List.zip(it.first, it.second) }
+
+    val pairArrayToPairList: (Pair<Array<Int>, Array<Int>>) -> Pair<List<Int>, List<Int>> =
+            { List.of(*it.first) to List.of(*it.second) }
+
+    val peq: Eq<Pair<Int, Int>> = PairInstance.eq()
+
+    val lpe: Eq<_1<List.Companion, Pair<Int, Int>>> = List.eq(peq)
+
+    @Test fun zip() = (randomInts() to randomInts()).toPair() * pairArrayToPairList *
+            (zipByKotlin to zip) `$` lpe.test { it.first shouldEqualTo it.second }
 }

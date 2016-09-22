@@ -202,4 +202,13 @@ object ListFunctions {
         is List.Cons ->
             if (cond(list.head).raw) dropWhile(list.tail, cond) else list
     }
+
+    internal tailrec fun <P, Q> zip(left: List<P>, right: List<Q>, built: List<Pair<P, Q>> = List.empty()): List<Pair<P, Q>> =
+            when (left) {
+                is List.Nil -> reverse(built)
+                is List.Cons -> when (right) {
+                    is List.Nil -> reverse(built)
+                    is List.Cons -> zip(left.tail, right.tail, (left.head to right.head) + built)
+                }
+            }
 }
