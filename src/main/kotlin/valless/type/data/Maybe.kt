@@ -36,6 +36,60 @@ sealed class Maybe<T> : _1<Maybe.Companion, T> {
             , Monoid.Deriving<Companion>
             , Traversable._1_<Companion> {
 
+        fun <T, R> maybe(maybe: Maybe<T>, defaultValue: R, f: (T) -> R): R = when (maybe) {
+            is Nothing -> defaultValue
+            is Just -> f(maybe.value)
+        }
+
+        fun <T> fromMaybe(defaultValue: T, maybe: Maybe<T>): T = when (maybe) {
+            is Nothing -> defaultValue
+            is Just -> maybe.value
+        }
+
+        fun <T> maybeToList(maybe: Maybe<T>): List<T> = when (maybe) {
+            is Nothing -> List.empty()
+            is Just -> List.of(maybe.value)
+        }
+
+        fun <T> listToMaybe(list: List<T>): Maybe<T> = when (list) {
+            is List.Nil -> Nothing()
+            is List.Cons -> Just(list.head)
+        }
+
+        fun <T> catMaybes(list: List<Maybe<T>>): List<T> = when (list) {
+            is List.Nil -> List.empty()
+            is List.Cons -> catMaybes(list.head, list.tail)
+        }
+
+        internal tailrec fun <T> catMaybes(first: Maybe<T>, list: List<Maybe<T>>, built: List<T> = List.empty()): List<T> =
+                when (first) {
+                    is Nothing -> when (list) {
+                        is List.Nil -> List.reverse(built)
+                        is List.Cons -> catMaybes(list.head, list.tail, built)
+                    }
+                    is Just -> when (list) {
+                        is List.Nil -> List.reverse(first.value + built)
+                        is List.Cons -> catMaybes(list.head, list.tail, first.value + built)
+                    }
+                }
+
+        fun <T, R> mapMaybe(list: List<T>, f: (T) -> Maybe<R>): List<R> = when (list) {
+            is List.Nil -> List.empty()
+            is List.Cons -> mapMaybe(f(list.head), list.tail, f)
+        }
+
+        internal tailrec fun <T, R> mapMaybe(first: Maybe<R>, list: List<T>, f: (T) -> Maybe<R>, built: List<R> = List.empty()): List<R> =
+                when (first) {
+                    is Nothing -> when (list) {
+                        is List.Nil -> List.reverse(built)
+                        is List.Cons -> mapMaybe(f(list.head), list.tail, f, built)
+                    }
+                    is Just -> when (list) {
+                        is List.Nil -> List.reverse(first.value + built)
+                        is List.Cons -> mapMaybe(f(list.head), list.tail, f, first.value + built)
+                    }
+                }
+
         fun <T> narrow(): (_1<Companion, T>) -> Maybe<T> = { it.narrow }
 
         override fun <T> eq(e: Eq<T>): Eq<_1<Companion, T>> = object : Eq<_1<Companion, T>> {
